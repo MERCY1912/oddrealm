@@ -39,7 +39,7 @@ const GameStats = () => {
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-8 sm:mb-16">
       {stats.map((stat, index) => {
         const Icon = stat.icon;
         return (
@@ -47,14 +47,14 @@ const GameStats = () => {
             key={index}
             className={`${stat.bgColor} ${stat.borderColor} border-2 hover:scale-105 transition-transform duration-300`}
           >
-            <CardContent className="p-4 text-center">
-              <div className={`inline-flex p-3 rounded-lg ${stat.bgColor} ${stat.borderColor} border mb-3`}>
-                <Icon className={`h-6 w-6 ${stat.color}`} />
+            <CardContent className="p-3 sm:p-4 text-center">
+              <div className={`inline-flex p-2 sm:p-3 rounded-lg ${stat.bgColor} ${stat.borderColor} border mb-2 sm:mb-3`}>
+                <Icon className={`h-4 w-4 sm:h-6 sm:w-6 ${stat.color}`} />
               </div>
-              <div className={`text-2xl font-bold ${stat.color} mb-1`}>
+              <div className={`text-lg sm:text-xl md:text-2xl font-bold ${stat.color} mb-1`}>
                 {stat.value}
               </div>
-              <div className="text-gray-300 text-sm">
+              <div className="text-gray-300 text-xs sm:text-sm">
                 {stat.label}
               </div>
             </CardContent>

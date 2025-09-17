@@ -151,55 +151,55 @@ const GameInterface = ({ player, onPlayerUpdate, onLogout, onOpenSettings, onOpe
 
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="flex-1 p-4 content-with-chat" style={{ paddingBottom: `${chatHeight}px` }}>
+      <div className="flex-1 p-2 sm:p-4 content-with-chat" style={{ paddingBottom: `${chatHeight}px` }}>
         <div className="max-w-7xl mx-auto">
           {/* Заголовок */}
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="font-ui text-4xl font-bold tracking-wide"
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-4">
+            <h1 className="font-ui text-2xl sm:text-3xl md:text-4xl font-bold tracking-wide"
                 style={{ background: "linear-gradient(180deg,#fde8a7,#8a5a18)", WebkitBackgroundClip: "text", color: "transparent" }}>
               КРОВАВЫЕ АРЕНЫ
             </h1>
             
             {/* Кнопки навигации по центру */}
             {currentLocation === 'character' && (
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button
                   onClick={() => handleLocationNavigation('city')}
-                  className="medieval-button px-4 py-2 text-sm font-medium"
+                  className="medieval-button px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium"
                 >
                   Город
                 </Button>
                 <Button
                   onClick={() => handleLocationNavigation('arena')}
-                  className="medieval-button px-4 py-2 text-sm font-medium"
+                  className="medieval-button px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium"
                 >
                   Арена
                 </Button>
                 <Button
                   onClick={() => handleLocationNavigation('infirmary')}
-                  className="medieval-button px-4 py-2 text-sm font-medium"
+                  className="medieval-button px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium"
                 >
                   Лечебница
                 </Button>
               </div>
             )}
             
-            <div className="flex items-center gap-4">
-              <div className="px-3 py-1 rounded-md bg-[#22232b] ring-1 ring-black/40 text-ash shadow-[inset_0_1px_0_rgba(255,255,255,.06)] hover:bg-[#272833] hover:text-white transition">
-                <span className="font-ui font-bold text-lg" style={{ background: "linear-gradient(180deg,#fde8a7,#8a5a18)", WebkitBackgroundClip: "text", color: "transparent" }}>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+              <div className="px-2 sm:px-3 py-1 rounded-md bg-[#22232b] ring-1 ring-black/40 text-ash shadow-[inset_0_1px_0_rgba(255,255,255,.06)] hover:bg-[#272833] hover:text-white transition">
+                <span className="font-ui font-bold text-sm sm:text-lg" style={{ background: "linear-gradient(180deg,#fde8a7,#8a5a18)", WebkitBackgroundClip: "text", color: "transparent" }}>
                   💰 {player.gold} золота
                 </span>
               </div>
               <Button 
                 onClick={showDemoNotifications}
-                className="px-3 py-1 rounded-md bg-[#22232b] ring-1 ring-black/40 text-ash shadow-[inset_0_1px_0_rgba(255,255,255,.06)] hover:bg-[#272833] hover:text-white transition font-ui"
+                className="px-2 sm:px-3 py-1 rounded-md bg-[#22232b] ring-1 ring-black/40 text-ash shadow-[inset_0_1px_0_rgba(255,255,255,.06)] hover:bg-[#272833] hover:text-white transition font-ui text-xs sm:text-sm"
               >
                 FX Демо
               </Button>
               {onOpenAdminPanel && (
                 <Button 
                   onClick={onOpenAdminPanel}
-                  className="px-3 py-1 rounded-md bg-[#22232b] ring-1 ring-black/40 text-ash shadow-[inset_0_1px_0_rgba(255,255,255,.06)] hover:bg-[#272833] hover:text-white transition font-ui"
+                  className="px-2 sm:px-3 py-1 rounded-md bg-[#22232b] ring-1 ring-black/40 text-ash shadow-[inset_0_1px_0_rgba(255,255,255,.06)] hover:bg-[#272833] hover:text-white transition font-ui text-xs sm:text-sm"
                 >
                   🛠️ Админ
                 </Button>
@@ -207,7 +207,7 @@ const GameInterface = ({ player, onPlayerUpdate, onLogout, onOpenSettings, onOpe
               {onOpenAdminPanelV2 && (
                 <Button 
                   onClick={onOpenAdminPanelV2}
-                  className="px-3 py-1 rounded-md bg-[#22232b] ring-1 ring-black/40 text-ash shadow-[inset_0_1px_0_rgba(255,255,255,.06)] hover:bg-[#272833] hover:text-white transition font-ui"
+                  className="px-2 sm:px-3 py-1 rounded-md bg-[#22232b] ring-1 ring-black/40 text-ash shadow-[inset_0_1px_0_rgba(255,255,255,.06)] hover:bg-[#272833] hover:text-white transition font-ui text-xs sm:text-sm"
                 >
                   🎮 Админ v2
                 </Button>
@@ -218,7 +218,7 @@ const GameInterface = ({ player, onPlayerUpdate, onLogout, onOpenSettings, onOpe
                     console.log('Settings button clicked');
                     onOpenSettings();
                   }}
-                  className="px-3 py-1 rounded-md bg-[#22232b] ring-1 ring-black/40 text-ash shadow-[inset_0_1px_0_rgba(255,255,255,.06)] hover:bg-[#272833] hover:text-white transition font-ui"
+                  className="px-2 sm:px-3 py-1 rounded-md bg-[#22232b] ring-1 ring-black/40 text-ash shadow-[inset_0_1px_0_rgba(255,255,255,.06)] hover:bg-[#272833] hover:text-white transition font-ui text-xs sm:text-sm"
                   title="Настройки аккаунта"
                 >
                   ⚙️ Настройки
@@ -226,7 +226,7 @@ const GameInterface = ({ player, onPlayerUpdate, onLogout, onOpenSettings, onOpe
               )}
               <Button 
                 onClick={onLogout}
-                className="px-3 py-1 rounded-md bg-[#22232b] ring-1 ring-black/40 text-ash shadow-[inset_0_1px_0_rgba(255,255,255,.06)] hover:bg-[#272833] hover:text-white transition font-ui"
+                className="px-2 sm:px-3 py-1 rounded-md bg-[#22232b] ring-1 ring-black/40 text-ash shadow-[inset_0_1px_0_rgba(255,255,255,.06)] hover:bg-[#272833] hover:text-white transition font-ui text-xs sm:text-sm"
               >
                 Выйти
               </Button>
@@ -240,7 +240,7 @@ const GameInterface = ({ player, onPlayerUpdate, onLogout, onOpenSettings, onOpe
             </div>
           )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 main-stage items-stretch">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 main-stage items-stretch">
               {/* Панель персонажа - показываем только в локации персонажа */}
               {currentLocation === 'character' && (
                 <>
@@ -352,8 +352,8 @@ const GameInterface = ({ player, onPlayerUpdate, onLogout, onOpenSettings, onOpe
 
       {/* Fixed чат и список онлайн игроков - прикреплен к нижней части экрана */}
       <div className="sticky-chat-panel" style={{ height: `${chatHeight}px` }}>
-        {/* Кнопки управления размером панели */}
-        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 flex gap-1 z-30">
+        {/* Кнопки управления размером панели - скрываем на мобильных */}
+        <div className="hidden sm:block absolute -top-8 left-1/2 transform -translate-x-1/2 flex gap-1 z-30">
           <button
             onClick={() => {
               const newHeight = Math.min(600, chatHeight + 50);
@@ -388,8 +388,8 @@ const GameInterface = ({ player, onPlayerUpdate, onLogout, onOpenSettings, onOpe
           </button>
         </div>
         
-        <div className="flex h-full">
-          <div className="flex-[80%] flex flex-col chat-content medieval-bg-secondary">
+        <div className="flex flex-col sm:flex-row h-full">
+          <div className="flex-1 sm:flex-[80%] flex flex-col chat-content medieval-bg-secondary">
             <div className="flex-1 min-h-0 p-2">
                 <Chat
                   userId={player.id}
@@ -397,7 +397,7 @@ const GameInterface = ({ player, onPlayerUpdate, onLogout, onOpenSettings, onOpe
                 />
             </div>
           </div>
-          <div className="w-[20%] flex-shrink-0 flex flex-col online-list-content">
+          <div className="w-full sm:w-[20%] flex-shrink-0 flex flex-col online-list-content">
             <div className="flex-1 min-h-0">
                 <OnlinePlayersList />
             </div>
