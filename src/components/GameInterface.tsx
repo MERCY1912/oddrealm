@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Player, ArenaBot } from '@/types/game';
 import { arenaBots } from '@/data/arenaBots';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -60,6 +59,12 @@ const GameInterface = ({ player, onPlayerUpdate, onLogout, onOpenSettings, onOpe
     }
     
     return height;
+  });
+  
+  // Состояние для скрытия чата на мобильных
+  const [isChatHidden, setIsChatHidden] = useState(() => {
+    const saved = localStorage.getItem('chat-hidden-mobile');
+    return saved === 'true';
   });
   
   const [currentLocation, setCurrentLocation] = useState('character');
@@ -136,22 +141,29 @@ const GameInterface = ({ player, onPlayerUpdate, onLogout, onOpenSettings, onOpe
         gold: player.gold - 10
       };
       onPlayerUpdate(updatedPlayer);
-      addNotification('loot', 'Здоровье восстановлено!', '💚');
+      addNotification('loot', 'Здоровье восстановлено!', '');
     } else {
-      addNotification('loot', 'Недостаточно золота для лечения!', '💰');
+      addNotification('loot', 'Недостаточно золота для лечения!', '');
     }
+  };
+
+  // Функция для переключения видимости чата на мобильных
+  const toggleChatVisibility = () => {
+    const newState = !isChatHidden;
+    setIsChatHidden(newState);
+    localStorage.setItem('chat-hidden-mobile', newState.toString());
   };
 
   // Демонстрационные уведомления (можно удалить в продакшене)
   const showDemoNotifications = () => {
-    addNotification('loot', 'Получен редкий предмет!', '💎');
-    setTimeout(() => addNotification('levelup', 'Новый уровень!', '⭐'), 1000);
-    setTimeout(() => addNotification('achievement', 'Достижение разблокировано!', '🏆'), 2000);
+    addNotification('loot', 'Получен редкий предмет!', '');
+    setTimeout(() => addNotification('levelup', 'Новый уровень!', ''), 1000);
+    setTimeout(() => addNotification('achievement', 'Достижение разблокировано!', ''), 2000);
   };
 
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="flex-1 p-2 sm:p-4 content-with-chat" style={{ paddingBottom: `${chatHeight}px` }}>
+      <div className="flex-1 p-2 sm:p-4 content-with-chat" style={{ paddingBottom: isChatHidden ? '0px' : `${chatHeight}px` }}>
         <div className="max-w-7xl mx-auto">
           {/* Заголовок */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-4">
@@ -187,7 +199,7 @@ const GameInterface = ({ player, onPlayerUpdate, onLogout, onOpenSettings, onOpe
             <div className="flex flex-wrap items-center gap-2 sm:gap-4">
               <div className="px-2 sm:px-3 py-1 rounded-md bg-[#22232b] ring-1 ring-black/40 text-ash shadow-[inset_0_1px_0_rgba(255,255,255,.06)] hover:bg-[#272833] hover:text-white transition">
                 <span className="font-ui font-bold text-sm sm:text-lg" style={{ background: "linear-gradient(180deg,#fde8a7,#8a5a18)", WebkitBackgroundClip: "text", color: "transparent" }}>
-                  💰 {player.gold} золота
+                   {player.gold} золота
                 </span>
               </div>
               <Button 
@@ -201,7 +213,7 @@ const GameInterface = ({ player, onPlayerUpdate, onLogout, onOpenSettings, onOpe
                   onClick={onOpenAdminPanel}
                   className="px-2 sm:px-3 py-1 rounded-md bg-[#22232b] ring-1 ring-black/40 text-ash shadow-[inset_0_1px_0_rgba(255,255,255,.06)] hover:bg-[#272833] hover:text-white transition font-ui text-xs sm:text-sm"
                 >
-                  🛠️ Админ
+                   Админ
                 </Button>
               )}
               {onOpenAdminPanelV2 && (
@@ -209,7 +221,7 @@ const GameInterface = ({ player, onPlayerUpdate, onLogout, onOpenSettings, onOpe
                   onClick={onOpenAdminPanelV2}
                   className="px-2 sm:px-3 py-1 rounded-md bg-[#22232b] ring-1 ring-black/40 text-ash shadow-[inset_0_1px_0_rgba(255,255,255,.06)] hover:bg-[#272833] hover:text-white transition font-ui text-xs sm:text-sm"
                 >
-                  🎮 Админ v2
+                   Админ v2
                 </Button>
               )}
               {onOpenSettings && (
@@ -221,7 +233,7 @@ const GameInterface = ({ player, onPlayerUpdate, onLogout, onOpenSettings, onOpe
                   className="px-2 sm:px-3 py-1 rounded-md bg-[#22232b] ring-1 ring-black/40 text-ash shadow-[inset_0_1px_0_rgba(255,255,255,.06)] hover:bg-[#272833] hover:text-white transition font-ui text-xs sm:text-sm"
                   title="Настройки аккаунта"
                 >
-                  ⚙️ Настройки
+                   Настройки
                 </Button>
               )}
               <Button 
@@ -313,7 +325,7 @@ const GameInterface = ({ player, onPlayerUpdate, onLogout, onOpenSettings, onOpe
                               <div>
                                 <div className="mb-4">
                                   <Button onClick={handleBackFromShop} className="medieval-button">
-                                    ← Назад в лавку
+                                     Назад в лавку
                                   </Button>
                                 </div>
                                 <EnhancedShop
@@ -351,58 +363,71 @@ const GameInterface = ({ player, onPlayerUpdate, onLogout, onOpenSettings, onOpe
       </div>
 
       {/* Fixed чат и список онлайн игроков - прикреплен к нижней части экрана */}
-      <div className="sticky-chat-panel" style={{ height: `${chatHeight}px` }}>
-        {/* Кнопки управления размером панели - скрываем на мобильных */}
-        <div className="hidden sm:block absolute -top-8 left-1/2 transform -translate-x-1/2 flex gap-1 z-30">
-          <button
-            onClick={() => {
-              const newHeight = Math.min(600, chatHeight + 50);
-              setChatHeight(newHeight);
-              localStorage.setItem('chat-panel-height', newHeight.toString());
-              document.documentElement.style.setProperty('--chat-height', `${newHeight}px`);
-            }}
-            disabled={chatHeight >= 600}
-            className="w-8 h-6 p-0 medieval-bg-tertiary medieval-border border hover:medieval-bg-secondary text-white text-xs rounded flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_2px_4px_rgba(0,0,0,.3)] hover:shadow-[0_4px_8px_rgba(0,0,0,.4)] transition-all duration-200"
-            style={{
-              background: 'linear-gradient(145deg, hsl(var(--medieval-bg-tertiary)), hsl(var(--medieval-bg-secondary)))'
-            }}
-            title="Увеличить высоту чата"
-          >
-            ↑
-          </button>
-          <button
-            onClick={() => {
-              const newHeight = Math.max(200, chatHeight - 50);
-              setChatHeight(newHeight);
-              localStorage.setItem('chat-panel-height', newHeight.toString());
-              document.documentElement.style.setProperty('--chat-height', `${newHeight}px`);
-            }}
-            disabled={chatHeight <= 200}
-            className="w-8 h-6 p-0 medieval-bg-tertiary medieval-border border hover:medieval-bg-secondary text-white text-xs rounded flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_2px_4px_rgba(0,0,0,.3)] hover:shadow-[0_4px_8px_rgba(0,0,0,.4)] transition-all duration-200"
-            style={{
-              background: 'linear-gradient(145deg, hsl(var(--medieval-bg-tertiary)), hsl(var(--medieval-bg-secondary)))'
-            }}
-            title="Уменьшить высоту чата"
-          >
-            ↓
-          </button>
-        </div>
-        
-        <div className="flex flex-col sm:flex-row h-full">
-          <div className="flex-1 sm:flex-[80%] flex flex-col chat-content medieval-bg-secondary">
-            <div className="flex-1 min-h-0 p-2">
-                <Chat
-                  userId={player.id}
-                  username={player.username}
-                />
+      {!isChatHidden && (
+        <div className="sticky-chat-panel" style={{ height: `${chatHeight}px` }}>
+          {/* Кнопки управления размером панели - скрываем на мобильных */}
+          <div className="hidden sm:block absolute -top-8 left-1/2 transform -translate-x-1/2 flex gap-1 z-30">
+            <button
+              onClick={() => {
+                const newHeight = Math.min(600, chatHeight + 50);
+                setChatHeight(newHeight);
+                localStorage.setItem('chat-panel-height', newHeight.toString());
+                document.documentElement.style.setProperty('--chat-height', `${newHeight}px`);
+              }}
+              disabled={chatHeight >= 600}
+              className="w-8 h-6 p-0 medieval-bg-tertiary medieval-border border hover:medieval-bg-secondary text-white text-xs rounded flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_2px_4px_rgba(0,0,0,.3)] hover:shadow-[0_4px_8px_rgba(0,0,0,.4)] transition-all duration-200"
+              style={{
+                background: 'linear-gradient(145deg, hsl(var(--medieval-bg-tertiary)), hsl(var(--medieval-bg-secondary)))'
+              }}
+              title="Увеличить высоту чата"
+            >
+              
+            </button>
+            <button
+              onClick={() => {
+                const newHeight = Math.max(200, chatHeight - 50);
+                setChatHeight(newHeight);
+                localStorage.setItem('chat-panel-height', newHeight.toString());
+                document.documentElement.style.setProperty('--chat-height', `${newHeight}px`);
+              }}
+              disabled={chatHeight <= 200}
+              className="w-8 h-6 p-0 medieval-bg-tertiary medieval-border border hover:medieval-bg-secondary text-white text-xs rounded flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_2px_4px_rgba(0,0,0,.3)] hover:shadow-[0_4px_8px_rgba(0,0,0,.4)] transition-all duration-200"
+              style={{
+                background: 'linear-gradient(145deg, hsl(var(--medieval-bg-tertiary)), hsl(var(--medieval-bg-secondary)))'
+              }}
+              title="Уменьшить высоту чата"
+            >
+              
+            </button>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row h-full">
+            <div className="flex-1 sm:flex-[80%] flex flex-col chat-content medieval-bg-secondary">
+              <div className="flex-1 min-h-0 p-2">
+                  <Chat
+                    userId={player.id}
+                    username={player.username}
+                  />
+              </div>
+            </div>
+            <div className="w-full sm:w-[20%] flex-shrink-0 flex flex-col online-list-content">
+              <div className="flex-1 min-h-0">
+                  <OnlinePlayersList />
+              </div>
             </div>
           </div>
-          <div className="w-full sm:w-[20%] flex-shrink-0 flex flex-col online-list-content">
-            <div className="flex-1 min-h-0">
-                <OnlinePlayersList />
-            </div>
-          </div>
         </div>
+      )}
+      
+      {/* Кнопка переключения видимости чата - только на мобильных */}
+      <div className="sm:hidden fixed bottom-4 right-4 z-50">
+        <button
+          onClick={toggleChatVisibility}
+          className="w-12 h-12 rounded-full bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white shadow-lg hover:shadow-red-500/25 transition-all duration-300 flex items-center justify-center"
+          title={isChatHidden ? "Показать чат" : "Скрыть чат"}
+        >
+          {isChatHidden ? "" : ""}
+        </button>
       </div>
       
       {/* Уведомления */}
