@@ -149,10 +149,6 @@ const BattleInterface = ({
                       <div className={`w-6 h-3 border rounded flex items-center justify-center text-xs ${player.equipment?.earring ? 'bg-yellow-500/20 border-yellow-500' : 'bg-gray-600 border-gray-500'}`}>
                         {player.equipment?.earring ? '💎' : ''}
                       </div>
-                      {/* Ожерелье */}
-                      <div className={`w-6 h-3 border rounded flex items-center justify-center text-xs ${player.equipment?.necklace ? 'bg-yellow-500/20 border-yellow-500' : 'bg-gray-600 border-gray-500'}`}>
-                        {player.equipment?.necklace ? '📿' : ''}
-                      </div>
                       {/* Кольца */}
                       <div className="flex">
                         <div className={`w-3 h-3 border rounded flex items-center justify-center text-xs ${player.equipment?.ring1 ? 'bg-yellow-500/20 border-yellow-500' : 'bg-gray-600 border-gray-500'}`}>
@@ -268,8 +264,6 @@ const BattleInterface = ({
                     {/* Правая колонка слотов */}
                     <div className="flex flex-col items-center">
                       {/* Серьга */}
-                      <div className="w-6 h-3 bg-gray-600 border border-gray-500 rounded"></div>
-                      {/* Ожерелье */}
                       <div className="w-6 h-3 bg-gray-600 border border-gray-500 rounded"></div>
                       {/* Кольца */}
                       <div className="flex">
