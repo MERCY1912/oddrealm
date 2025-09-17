@@ -1,0 +1,818 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { 
+  --noise: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'>\
+<filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/></filter>\
+<rect width='120' height='120' filter='url(#n)' opacity='.05'/></svg>"); 
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Medieval fantasy theme colors */
+    --medieval-bg-primary: 240 6% 6%; /* ink - #0f0f12 */
+    --medieval-bg-secondary: 240 12% 11%; /* iron - #1b1b22 */
+    --medieval-bg-tertiary: 240 8% 20%; /* stone - #2a2a33 */
+    --medieval-text-primary: 0 0% 98%; /* Light text for dark theme */
+    --medieval-text-secondary: 240 4% 55%; /* ash - #8b8e98 */
+    --medieval-text-muted: 240 4% 40%; /* Muted ash */
+    --medieval-border: 240 8% 20%; /* stone borders */
+    --medieval-border-gold: 38 50% 50%; /* gold borders */
+    --medieval-accent-gold: 38 50% 50%; /* gold - #b58b46 */
+    --medieval-accent-blood: 0 60% 45%; /* blood - #b52a2a */
+    --medieval-accent-ash: 240 4% 55%; /* ash - #8b8e98 */
+  }
+
+  .dark {
+    --background: 240 6% 6%; /* ink */
+    --foreground: 0 0% 98%;
+
+    --card: 240 12% 11%; /* iron */
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 12% 11%; /* iron */
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 38 50% 50%; /* gold */
+    --primary-foreground: 240 6% 6%;
+
+    --secondary: 240 8% 20%; /* stone */
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 8% 20%; /* stone */
+    --muted-foreground: 240 4% 55%; /* ash */
+
+    --accent: 240 8% 20%; /* stone */
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 60% 45%; /* blood */
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 8% 20%; /* stone */
+    --input: 240 8% 20%; /* stone */
+    --ring: 38 50% 50%; /* gold */
+    --sidebar-background: 240 6% 6%; /* ink */
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 38 50% 50%; /* gold */
+    --sidebar-primary-foreground: 240 6% 6%; /* ink */
+    --sidebar-accent: 240 8% 20%; /* stone */
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 240 8% 20%; /* stone */
+    --sidebar-ring: 38 50% 50%; /* gold */
+
+    /* Medieval fantasy dark theme colors */
+    --medieval-bg-primary: 240 6% 6%; /* ink - #0f0f12 */
+    --medieval-bg-secondary: 240 12% 11%; /* iron - #1b1b22 */
+    --medieval-bg-tertiary: 240 8% 20%; /* stone - #2a2a33 */
+    --medieval-text-primary: 0 0% 98%; /* Light text */
+    --medieval-text-secondary: 240 4% 55%; /* ash - #8b8e98 */
+    --medieval-text-muted: 240 4% 40%; /* Muted ash */
+    --medieval-border: 240 8% 20%; /* stone borders */
+    --medieval-border-gold: 38 50% 50%; /* gold borders */
+    --medieval-accent-gold: 38 50% 50%; /* gold - #b58b46 */
+    --medieval-accent-blood: 0 60% 45%; /* blood - #b52a2a */
+    --medieval-accent-ash: 240 4% 55%; /* ash - #8b8e98 */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply text-ash font-body;
+    /* Осветляем центр, оставляем края тёмными */
+    background-color: #12141b; /* было #0f0f12 */
+    background-image:
+      radial-gradient(1000px 600px at 50% 22%, rgba(255,255,255,.055), transparent 60%),
+      radial-gradient(1200px 800px at 15% -10%, rgba(181,42,42,.10), transparent 60%),
+      radial-gradient(1200px 800px at 85% 110%, rgba(181,42,42,.08), transparent 60%),
+      var(--noise);
+    background-blend-mode: screen, screen, screen, normal;
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+}
+
+/* Кастомные стили скроллбара в цветах игры */
+@layer utilities {
+  /* Основной стиль скроллбара */
+  .game-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #4a5568 #2d3748;
+  }
+
+  /* Webkit стили для Chrome/Safari */
+  .game-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .game-scrollbar::-webkit-scrollbar-track {
+    background: #2d3748; /* Темно-серый фон трека */
+    border-radius: 4px;
+  }
+
+  .game-scrollbar::-webkit-scrollbar-thumb {
+    background: #4a5568; /* Серый ползунок */
+    border-radius: 4px;
+    border: 1px solid #2d3748;
+  }
+
+  .game-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #718096; /* Светлее при наведении */
+  }
+
+  .game-scrollbar::-webkit-scrollbar-thumb:active {
+    background: #a0aec0; /* Еще светлее при клике */
+  }
+
+  .game-scrollbar::-webkit-scrollbar-corner {
+    background: #2d3748; /* Угол скроллбара */
+  }
+
+  /* Стиль для горизонтального скроллбара */
+  .game-scrollbar-horizontal::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  /* Стиль для вертикального скроллбара */
+  .game-scrollbar-vertical::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  /* Стиль с золотыми акцентами (для особых элементов) */
+  .game-scrollbar-gold {
+    scrollbar-width: thin;
+    scrollbar-color: #d69e2e #2d3748;
+  }
+
+  .game-scrollbar-gold::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .game-scrollbar-gold::-webkit-scrollbar-track {
+    background: #2d3748;
+    border-radius: 4px;
+  }
+
+  .game-scrollbar-gold::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #d69e2e 0%, #b7791f 100%);
+    border-radius: 4px;
+    border: 1px solid #2d3748;
+  }
+
+  .game-scrollbar-gold::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #f6e05e 0%, #d69e2e 100%);
+  }
+
+  .game-scrollbar-gold::-webkit-scrollbar-thumb:active {
+    background: linear-gradient(180deg, #faf089 0%, #f6e05e 100%);
+  }
+
+  /* Theme-aware game styles */
+  .game-bg-primary {
+    background-color: hsl(var(--game-bg-primary));
+  }
+
+  .game-bg-secondary {
+    background-color: hsl(var(--game-bg-secondary));
+  }
+
+  .game-bg-tertiary {
+    background-color: hsl(var(--game-bg-tertiary));
+  }
+
+  .game-text-primary {
+    color: hsl(var(--game-text-primary));
+  }
+
+  .game-text-secondary {
+    color: hsl(var(--game-text-secondary));
+  }
+
+  .game-text-muted {
+    color: hsl(var(--game-text-muted));
+  }
+
+  .game-border {
+    border-color: hsl(var(--game-border));
+  }
+
+  .game-border-dark {
+    border-color: hsl(var(--game-border-dark));
+  }
+
+  .game-accent-green {
+    color: hsl(var(--game-accent-green));
+  }
+
+  .game-accent-blue {
+    color: hsl(var(--game-accent-blue));
+  }
+
+  .game-accent-red {
+    color: hsl(var(--game-accent-red));
+  }
+
+  .game-accent-yellow {
+    color: hsl(var(--game-accent-yellow));
+  }
+
+  /* Light theme scrollbar styles */
+  .light .game-scrollbar {
+    scrollbar-color: #a0a0a0 #e0e0e0;
+  }
+
+  .light .game-scrollbar::-webkit-scrollbar-track {
+    background: #e0e0e0;
+  }
+
+  .light .game-scrollbar::-webkit-scrollbar-thumb {
+    background: #a0a0a0;
+    border: 1px solid #e0e0e0;
+  }
+
+  .light .game-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #808080;
+  }
+
+  .light .game-scrollbar::-webkit-scrollbar-thumb:active {
+    background: #606060;
+  }
+
+  .light .game-scrollbar::-webkit-scrollbar-corner {
+    background: #e0e0e0;
+  }
+
+  /* Medieval fantasy utility classes */
+  .medieval-bg-primary {
+    background-color: hsl(var(--medieval-bg-primary));
+  }
+
+  .medieval-bg-secondary {
+    background-color: hsl(var(--medieval-bg-secondary));
+  }
+
+  .medieval-bg-tertiary {
+    background-color: hsl(var(--medieval-bg-tertiary));
+  }
+
+  .medieval-text-primary {
+    color: hsl(var(--medieval-text-primary));
+  }
+
+  .medieval-text-secondary {
+    color: hsl(var(--medieval-text-secondary));
+  }
+
+  .medieval-text-muted {
+    color: hsl(var(--medieval-text-muted));
+  }
+
+  .medieval-border {
+    border-color: hsl(var(--medieval-border));
+  }
+
+  .medieval-border-gold {
+    border-color: hsl(var(--medieval-border-gold));
+  }
+
+  .medieval-accent-gold {
+    color: hsl(var(--medieval-accent-gold));
+  }
+
+  .medieval-accent-blood {
+    color: hsl(var(--medieval-accent-blood));
+  }
+
+  .medieval-accent-ash {
+    color: hsl(var(--medieval-accent-ash));
+  }
+
+  /* Medieval fantasy panel styles */
+  .medieval-panel {
+    @apply medieval-bg-secondary medieval-border border-2 rounded-lg shadow-lg;
+    background: linear-gradient(145deg, hsl(var(--medieval-bg-secondary)), hsl(var(--medieval-bg-tertiary)));
+    border-image: linear-gradient(45deg, hsl(var(--medieval-border-gold)), hsl(var(--medieval-border))) 1;
+    backdrop-filter: blur(1px);
+    position: relative;
+  }
+
+  .medieval-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--noise);
+    opacity: 0.03;
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  .medieval-panel-header {
+    @apply medieval-text-primary font-ui font-semibold text-lg;
+    text-shadow: 0 0 8px rgba(181, 139, 70, 0.3);
+  }
+
+  .medieval-button {
+    @apply medieval-bg-tertiary medieval-text-primary medieval-border border-2 px-4 py-2 rounded-md font-ui font-medium;
+    background: linear-gradient(145deg, hsl(var(--medieval-bg-tertiary)), hsl(var(--medieval-bg-secondary)));
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .medieval-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(181, 139, 70, 0.2), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .medieval-button:hover::before {
+    left: 100%;
+  }
+
+  .medieval-button:hover {
+    @apply shadow-glow-gold;
+    background: linear-gradient(145deg, hsl(var(--medieval-accent-gold)), hsl(var(--medieval-bg-tertiary)));
+    color: hsl(var(--medieval-bg-primary));
+    transform: translateY(-1px);
+  }
+
+  .medieval-input {
+    @apply medieval-bg-tertiary medieval-text-primary medieval-border border-2 px-3 py-2 rounded-md font-body;
+    background: linear-gradient(145deg, hsl(var(--medieval-bg-tertiary)), hsl(var(--medieval-bg-secondary)));
+  }
+
+  .medieval-input:focus {
+    @apply ring-2 ring-gold border-gold outline-none;
+  }
+
+  /* Medieval fantasy progress bars */
+  .medieval-progress-bg {
+    @apply medieval-bg-tertiary rounded-full;
+    background: linear-gradient(90deg, hsl(var(--medieval-bg-tertiary)), hsl(var(--medieval-bg-secondary)));
+  }
+
+  .medieval-progress-health {
+    @apply rounded-full;
+    background: linear-gradient(90deg, #dc2626, #ef4444);
+    box-shadow: 0 0 8px rgba(220, 38, 38, 0.4);
+  }
+
+  .medieval-progress-mana {
+    @apply rounded-full;
+    background: linear-gradient(90deg, #2563eb, #3b82f6);
+    box-shadow: 0 0 8px rgba(37, 99, 235, 0.4);
+  }
+
+  .medieval-progress-experience {
+    @apply rounded-full;
+    background: linear-gradient(90deg, #b58b46, #d4af37);
+    box-shadow: 0 0 8px rgba(181, 139, 70, 0.4);
+  }
+
+  /* Medieval fantasy item slots */
+  .medieval-item-slot {
+    @apply medieval-bg-tertiary medieval-border border-2 rounded-md flex items-center justify-center;
+    background: linear-gradient(145deg, hsl(var(--medieval-bg-tertiary)), hsl(var(--medieval-bg-secondary)));
+    min-height: 48px;
+    min-width: 48px;
+    position: relative;
+    transition: all 0.2s ease;
+  }
+
+  .medieval-item-slot::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--noise);
+    opacity: 0.02;
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  .medieval-item-slot:hover {
+    @apply medieval-border-gold shadow-glow-gold;
+  }
+
+  .medieval-item-slot.equipped {
+    @apply medieval-border-gold shadow-glow-gold;
+    animation: pulse-glow 2s ease-in-out infinite alternate;
+  }
+  
+  /* Редкость предметов с внутренним сиянием */
+  .medieval-item-slot.rarity-common {
+    box-shadow: inset 0 0 10px rgba(139, 142, 152, 0.1);
+  }
+  .medieval-item-slot.rarity-rare {
+    @apply ring-gold;
+    box-shadow: inset 0 0 10px rgba(181, 139, 70, 0.3);
+  }
+  .medieval-item-slot.rarity-epic {
+    @apply ring-blood;
+    box-shadow: inset 0 0 10px rgba(181, 42, 42, 0.4);
+  }
+  
+  /* FX при луте/уровне */
+  .loot-fx {
+    animation: pulse 1.2s ease-in-out;
+    box-shadow: 0 0 20px rgba(181, 42, 42, 0.6);
+  }
+  .level-up-fx {
+    animation: pulse 1.2s ease-in-out;
+    box-shadow: 0 0 20px rgba(181, 139, 70, 0.6);
+  }
+
+  @keyframes pulse-glow {
+    0% {
+      box-shadow: 0 0 8px rgba(181, 139, 70, 0.4);
+    }
+    100% {
+      box-shadow: 0 0 16px rgba(181, 139, 70, 0.8);
+    }
+  }
+
+  /* Medieval fantasy text styles */
+  .medieval-title {
+    @apply font-ui font-bold text-2xl medieval-text-primary;
+    font-family: 'Cinzel', serif;
+    text-shadow: 0 0 12px rgba(181, 139, 70, 0.5);
+    position: relative;
+  }
+
+  .medieval-title::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, hsl(var(--medieval-accent-gold)), transparent);
+    opacity: 0.6;
+  }
+
+  .medieval-subtitle {
+    @apply font-ui font-semibold text-lg medieval-text-secondary;
+    text-shadow: 0 0 6px rgba(181, 139, 70, 0.3);
+  }
+
+  .medieval-body {
+    @apply font-body text-sm medieval-text-primary;
+  }
+
+  .medieval-caption {
+    @apply font-body text-xs medieval-text-muted;
+  }
+
+  /* Дополнительные игровые эффекты */
+  .medieval-glow-text {
+    text-shadow: 0 0 8px currentColor;
+  }
+
+  .medieval-floating {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-4px);
+    }
+  }
+
+  @keyframes shimmer {
+    0% { 
+      opacity: 0; 
+      transform: translateX(-100%); 
+    }
+    50% { 
+      opacity: 1; 
+    }
+    100% { 
+      opacity: 0; 
+      transform: translateX(100%); 
+    }
+  }
+
+  /* Фоновая патина для панелей */
+  .panel-texture {
+    background-image:
+      radial-gradient(200% 140% at 10% -10%, rgba(181,42,42,.10), transparent 50%),
+      radial-gradient(180% 120% at 90% 120%, rgba(181,42,42,.08), transparent 50%),
+      var(--noise);
+    background-blend-mode: screen, screen, normal;
+  }
+
+  /* Эффект усиления орнаментов при ховере */
+  .group:hover .ornament-boost {
+    filter: saturate(1) brightness(1) contrast(1.05) drop-shadow(0 0 10px rgba(251,191,36,.22)) !important;
+    opacity: 0.95 !important;
+  }
+
+  /* Анимация блика для портрета героя */
+  @keyframes glint { 
+    0% { transform: translateX(0); opacity:.0 }
+    10%{ opacity:.35 }
+    40%{ transform: translateX(180%); opacity:.0 }
+    100%{ transform: translateX(180%); opacity:.0 }
+  }
+
+  /* Анимация искр для слотов предметов */
+  @keyframes spark {
+    0% { transform: translateY(0) scale(1); opacity:.8 }
+    100%{ transform: translateY(-14px) scale(.6); opacity:0 }
+  }
+
+  /* Анимация пульсации для амбиентного света */
+  @keyframes pulse {
+    0%,100%{ transform: scale(1) }
+    50%{ transform: scale(1.06) }
+  }
+
+  /* Pulse and glow animation for CTA button */
+  @keyframes pulse-glow {
+    0% {
+      box-shadow: 0 0 5px rgba(255, 0, 0, 0.5), 0 0 10px rgba(255, 0, 0, 0.3);
+      transform: scale(1);
+    }
+    50% {
+      box-shadow: 0 0 15px rgba(255, 0, 0, 0.8), 0 0 20px rgba(255, 0, 0, 0.5);
+      transform: scale(1.02);
+    }
+    100% {
+      box-shadow: 0 0 5px rgba(255, 0, 0, 0.5), 0 0 10px rgba(255, 0, 0, 0.3);
+      transform: scale(1);
+    }
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  /* Slash effect animation */
+  @keyframes slash-effect {
+    0% {
+      transform: translateX(-100%) rotate(45deg);
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(100%) rotate(45deg);
+      opacity: 0;
+    }
+  }
+
+  .animate-slash-effect {
+    animation: slash-effect 0.5s ease-out;
+  }
+
+  /* "Прожектор" под основными тремя колонками */
+  .main-stage::before{
+    content:"";
+    position:fixed; 
+    left:0; 
+    right:0; 
+    top:10vh; 
+    height:60vh;
+    margin:auto; 
+    max-width:1100px; 
+    pointer-events:none; 
+    z-index:-1;
+    background:radial-gradient(closest-side, rgba(255,255,255,.06), transparent 70%);
+    filter:blur(100px); 
+    opacity:.6;
+  }
+
+  /* Единая база для всех панелей */
+  .panel {
+    @apply relative rounded-2xl bg-[#1a1d25]/90 ring-1 ring-[#2a2f3a]
+           shadow-[0_10px_28px_rgba(0,0,0,.34)];
+  }
+  .panel::before{                 /* внутренняя кайма + лёгкий блик */
+    content: ""; 
+    position: absolute; 
+    inset: 1px; 
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,.05);
+    pointer-events: none;
+  }
+  .panel::after{
+    content: ""; 
+    position: absolute; 
+    inset: 0; 
+    border-radius: 16px; 
+    pointer-events: none;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.03), inset 0 -10px 24px rgba(0,0,0,.22);
+  }
+
+  /* Героическая панель с мягкой подсветкой */
+  .panel-hero {
+    @apply panel after:absolute after:inset-0 after:rounded-2xl after:pointer-events-none
+           after:bg-[radial-gradient(420px_240px_at_40%_8%,rgba(181,42,42,.10),transparent_60%)]
+           after:opacity-60;
+  }
+
+  /* Пустые слоты экипировки */
+  .empty-slot {
+    background: #23242b;           /* на тон светлее карточки */
+    border: 1px solid rgba(255, 255, 255, 0.06); /* внутренняя кайма ring-white/6 */
+    border-radius: 2px;            /* минимальные скругления */
+    position: relative;
+    transition: all 0.2s ease;
+  }
+
+  .empty-slot:hover {
+    background: #2a2d35;
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  /* Пустые слоты инвентаря (унифицированные) */
+  .inventory-empty-slot {
+    background: #23242b;           /* на тон светлее карточки */
+    border: 1px solid rgba(255, 255, 255, 0.06); /* внутренняя кайма ring-white/6 */
+    border-radius: 8px;
+    position: relative;
+    transition: all 0.2s ease;
+    min-height: 48px;
+    min-width: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .inventory-empty-slot:hover {
+    background: #2a2d35;
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+@layer components {
+  /* БАЗА: единый фон для всех карточек */
+  .panel {
+    @apply relative rounded-2xl ring-1 ring-[#2a2f3a]
+           shadow-[0_10px_28px_rgba(0,0,0,.34)];
+    /* нейтральный вертикальный градиент */
+    background: linear-gradient(180deg, #1c2029 0%, #171a21 100%);
+  }
+
+  /* Лёгкий «sheen» сверху + мягкая подложка снизу */
+  .panel--tint::before {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    border-radius: inherit;
+    pointer-events: none;
+    background:
+      /* свет сверху (тонкий) */
+      linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0) 26%);
+  }
+  
+  .panel--tint::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background:
+      /* мягкая «земля» снизу, даёт глубину */
+      radial-gradient(120% 90% at 50% 120%, rgba(0,0,0,.22), transparent 55%);
+    opacity: .9;
+  }
+
+  /* Вариант с тёплым оттенком сверху (очень деликатно) */
+  .panel--warm::before {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    border-radius: inherit;
+    pointer-events: none;
+    background:
+      linear-gradient(180deg, rgba(181,42,42,.10), rgba(181,42,42,0) 30%);
+  }
+}
+
+/* Enhanced sticky chat panel styles */
+.sticky-chat-panel {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 9999 !important;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.5) !important;
+  border-top: 2px solid hsl(var(--medieval-border-gold)) !important;
+  height: var(--chat-height, 280px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.sticky-chat-panel .panel {
+  background: linear-gradient(180deg, hsl(var(--medieval-bg-secondary)), hsl(var(--medieval-bg-primary))) !important;
+  backdrop-filter: blur(8px) !important;
+  height: 100% !important;
+  border-radius: 0 !important;
+  border: none !important;
+}
+
+/* Ensure content area doesn't get hidden behind chat */
+.content-with-chat {
+  padding-bottom: var(--chat-height, 280px) !important;
+  min-height: calc(100vh - var(--chat-height, 280px)) !important;
+}
+
+/* Set CSS variable for chat height */
+:root {
+  --chat-height: 280px;
+}
+
+/* Chat panel content styling */
+.sticky-chat-panel .chat-content {
+  flex: 4 !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: linear-gradient(180deg, hsl(var(--medieval-bg-secondary)), hsl(var(--medieval-bg-primary))) !important;
+  border-right: 1px solid hsl(var(--medieval-border)) !important;
+}
+
+.sticky-chat-panel .online-list-content {
+  flex: 1 !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: linear-gradient(180deg, hsl(var(--medieval-bg-secondary)), hsl(var(--medieval-bg-primary))) !important;
+}
+
+/* Chat area background */
+.chat-area {
+  background: linear-gradient(180deg, hsl(var(--medieval-bg-tertiary)), hsl(var(--medieval-bg-secondary))) !important;
+  border-radius: 8px !important;
+  margin: 4px !important;
+  padding: 8px !important;
+}
+
+/* Online list area background */
+.online-list-area {
+  background: linear-gradient(180deg, hsl(var(--medieval-bg-tertiary)), hsl(var(--medieval-bg-secondary))) !important;
+  border-radius: 8px !important;
+  margin: 4px !important;
+  padding: 4px !important;
+}
