@@ -23,6 +23,7 @@ import ShopLocation from './locations/ShopLocation';
 import DetailedStatsPanel from './DetailedStatsPanel';
 import InventoryPanel from './InventoryPanel';
 import ArenaHallView from './ArenaHallView';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface GameInterfaceProps {
   player: Player;
@@ -40,6 +41,8 @@ interface GameInterfaceProps {
 }
 
 const GameInterface = ({ player, onPlayerUpdate, onLogout, onOpenSettings, onOpenAdminPanel, onOpenAdminPanelV2, onAddToInventory, onEquipItem, onRemoveFromInventory, onUnequipItem, inventory = [], equipment = {} }: GameInterfaceProps) => {
+  const isMobile = useIsMobile();
+  
   const [notifications, setNotifications] = useState<Array<{
     id: string;
     type: 'loot' | 'levelup' | 'achievement';
@@ -50,7 +53,8 @@ const GameInterface = ({ player, onPlayerUpdate, onLogout, onOpenSettings, onOpe
   const [chatHeight, setChatHeight] = useState(() => {
     // Загружаем сохраненную высоту или используем значение по умолчанию
     const savedHeight = localStorage.getItem('chat-panel-height');
-    const defaultHeight = 280;
+    // Меньшая высота по умолчанию для мобильных устройств
+    const defaultHeight = window.innerWidth < 640 ? 180 : 280;
     const height = savedHeight ? parseInt(savedHeight, 10) : defaultHeight;
     
     // Устанавливаем CSS переменную при инициализации
@@ -61,9 +65,14 @@ const GameInterface = ({ player, onPlayerUpdate, onLogout, onOpenSettings, onOpe
     return height;
   });
   
-  // Состояние для скрытия чата на мобильных
+  // Состояние для скрытия чата и списка онлайна на мобильных
   const [isChatHidden, setIsChatHidden] = useState(() => {
     const saved = localStorage.getItem('chat-hidden-mobile');
+    return saved === 'true';
+  });
+  
+  const [isOnlineListHidden, setIsOnlineListHidden] = useState(() => {
+    const saved = localStorage.getItem('online-list-hidden-mobile');
     return saved === 'true';
   });
   
@@ -147,11 +156,17 @@ const GameInterface = ({ player, onPlayerUpdate, onLogout, onOpenSettings, onOpe
     }
   };
 
-  // Функция для переключения видимости чата на мобильных
+  // Функции для переключения видимости чата и списка онлайна на мобильных
   const toggleChatVisibility = () => {
     const newState = !isChatHidden;
     setIsChatHidden(newState);
     localStorage.setItem('chat-hidden-mobile', newState.toString());
+  };
+  
+  const toggleOnlineListVisibility = () => {
+    const newState = !isOnlineListHidden;
+    setIsOnlineListHidden(newState);
+    localStorage.setItem('online-list-hidden-mobile', newState.toString());
   };
 
   // Демонстрационные уведомления (можно удалить в продакшене)
@@ -363,70 +378,93 @@ const GameInterface = ({ player, onPlayerUpdate, onLogout, onOpenSettings, onOpe
       </div>
 
       {/* Fixed чат и список онлайн игроков - прикреплен к нижней части экрана */}
-      {!isChatHidden && (
-        <div className="sticky-chat-panel" style={{ height: `${chatHeight}px` }}>
-          {/* Кнопки управления размером панели - скрываем на мобильных */}
-          <div className="hidden sm:block absolute -top-8 left-1/2 transform -translate-x-1/2 flex gap-1 z-30">
-            <button
-              onClick={() => {
-                const newHeight = Math.min(600, chatHeight + 50);
-                setChatHeight(newHeight);
-                localStorage.setItem('chat-panel-height', newHeight.toString());
-                document.documentElement.style.setProperty('--chat-height', `${newHeight}px`);
-              }}
-              disabled={chatHeight >= 600}
-              className="w-8 h-6 p-0 medieval-bg-tertiary medieval-border border hover:medieval-bg-secondary text-white text-xs rounded flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_2px_4px_rgba(0,0,0,.3)] hover:shadow-[0_4px_8px_rgba(0,0,0,.4)] transition-all duration-200"
-              style={{
-                background: 'linear-gradient(145deg, hsl(var(--medieval-bg-tertiary)), hsl(var(--medieval-bg-secondary)))'
-              }}
-              title="Увеличить высоту чата"
-            >
-              
-            </button>
-            <button
-              onClick={() => {
-                const newHeight = Math.max(200, chatHeight - 50);
-                setChatHeight(newHeight);
-                localStorage.setItem('chat-panel-height', newHeight.toString());
-                document.documentElement.style.setProperty('--chat-height', `${newHeight}px`);
-              }}
-              disabled={chatHeight <= 200}
-              className="w-8 h-6 p-0 medieval-bg-tertiary medieval-border border hover:medieval-bg-secondary text-white text-xs rounded flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_2px_4px_rgba(0,0,0,.3)] hover:shadow-[0_4px_8px_rgba(0,0,0,.4)] transition-all duration-200"
-              style={{
-                background: 'linear-gradient(145deg, hsl(var(--medieval-bg-tertiary)), hsl(var(--medieval-bg-secondary)))'
-              }}
-              title="Уменьшить высоту чата"
-            >
-              
-            </button>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row h-full">
-            <div className="flex-1 sm:flex-[80%] flex flex-col chat-content medieval-bg-secondary">
-              <div className="flex-1 min-h-0 p-2">
-                  <Chat
-                    userId={player.id}
-                    username={player.username}
-                  />
-              </div>
-            </div>
-            <div className="w-full sm:w-[20%] flex-shrink-0 flex flex-col online-list-content">
-              <div className="flex-1 min-h-0">
-                  <OnlinePlayersList />
-              </div>
-            </div>
-          </div>
+      <div className="sticky-chat-panel" style={{ height: `${chatHeight}px` }}>
+        {/* Кнопки управления размером панели - скрываем на мобильных */}
+        <div className="hidden sm:block absolute -top-8 left-1/2 transform -translate-x-1/2 flex gap-1 z-30">
+          <button
+            onClick={() => {
+              const newHeight = Math.min(600, chatHeight + 50);
+              setChatHeight(newHeight);
+              localStorage.setItem('chat-panel-height', newHeight.toString());
+              document.documentElement.style.setProperty('--chat-height', `${newHeight}px`);
+            }}
+            disabled={chatHeight >= 600}
+            className="w-8 h-6 p-0 medieval-bg-tertiary medieval-border border hover:medieval-bg-secondary text-white text-xs rounded flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_2px_4px_rgba(0,0,0,.3)] hover:shadow-[0_4px_8px_rgba(0,0,0,.4)] transition-all duration-200"
+            style={{
+              background: 'linear-gradient(145deg, hsl(var(--medieval-bg-tertiary)), hsl(var(--medieval-bg-secondary)))'
+            }}
+            title="Увеличить высоту чата"
+          >
+            
+          </button>
+          <button
+            onClick={() => {
+              const newHeight = Math.max(200, chatHeight - 50);
+              setChatHeight(newHeight);
+              localStorage.setItem('chat-panel-height', newHeight.toString());
+              document.documentElement.style.setProperty('--chat-height', `${newHeight}px`);
+            }}
+            disabled={chatHeight <= 200}
+            className="w-8 h-6 p-0 medieval-bg-tertiary medieval-border border hover:medieval-bg-secondary text-white text-xs rounded flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_2px_4px_rgba(0,0,0,.3)] hover:shadow-[0_4px_8px_rgba(0,0,0,.4)] transition-all duration-200"
+            style={{
+              background: 'linear-gradient(145deg, hsl(var(--medieval-bg-tertiary)), hsl(var(--medieval-bg-secondary)))'
+            }}
+            title="Уменьшить высоту чата"
+          >
+            
+          </button>
         </div>
-      )}
+        
+        <div className="flex flex-col sm:flex-row h-full">
+          {/* Чат - скрываем на мобильных если выбран */}
+          {(!isChatHidden || !isMobile) && (
+            <div className="flex-1 sm:flex-[80%] flex flex-col chat-content medieval-bg-secondary">
+              <div className={`flex-1 min-h-0 ${isMobile ? 'p-0.5' : 'p-2'}`}>
+                <Chat
+                  userId={player.id}
+                  username={player.username}
+                />
+              </div>
+            </div>
+          )}
+          
+          {/* Список онлайна - скрываем на мобильных если выбран */}
+          {(!isOnlineListHidden || !isMobile) && (
+            <div className="w-full sm:w-[20%] flex-shrink-0 flex flex-col online-list-content">
+              <div className={`flex-1 min-h-0 ${isMobile ? 'p-0.5' : 'p-2'}`}>
+                <OnlinePlayersList />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
       
-      {/* Кнопка переключения видимости чата - только на мобильных */}
-      <div className="sm:hidden fixed bottom-4 right-4 z-50">
+      {/* Кнопки управления видимостью - только на мобильных */}
+      <div className="sm:hidden fixed bottom-4 right-4 z-[9999] flex flex-col gap-2">
+        {/* Кнопка переключения видимости чата */}
         <button
           onClick={toggleChatVisibility}
-          className="w-12 h-12 rounded-full bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white shadow-lg hover:shadow-red-500/25 transition-all duration-300 flex items-center justify-center"
+          className={`w-14 h-14 rounded-full shadow-2xl transition-all duration-300 flex items-center justify-center border-2 border-white/20 ${
+            isChatHidden 
+              ? 'bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900' 
+              : 'bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900'
+          } text-white text-lg`}
           title={isChatHidden ? "Показать чат" : "Скрыть чат"}
         >
-          {isChatHidden ? "" : ""}
+          {isChatHidden ? "💬" : "💬"}
+        </button>
+        
+        {/* Кнопка переключения видимости списка онлайна */}
+        <button
+          onClick={toggleOnlineListVisibility}
+          className={`w-14 h-14 rounded-full shadow-2xl transition-all duration-300 flex items-center justify-center border-2 border-white/20 ${
+            isOnlineListHidden 
+              ? 'bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900' 
+              : 'bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900'
+          } text-white text-lg`}
+          title={isOnlineListHidden ? "Показать онлайн" : "Скрыть онлайн"}
+        >
+          {isOnlineListHidden ? "👥" : "👥"}
         </button>
       </div>
       

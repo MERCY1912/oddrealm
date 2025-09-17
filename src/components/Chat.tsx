@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ChatMessage {
   id: string;
@@ -19,6 +20,7 @@ interface ChatProps {
 }
 
 const Chat = ({ userId, username }: ChatProps) => {
+  const isMobile = useIsMobile();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -162,36 +164,45 @@ const Chat = ({ userId, username }: ChatProps) => {
 
   return (
     <div className="h-full flex flex-col chat-area">
-      <ScrollArea className="flex-1 p-2 min-h-0 game-scrollbar">
-        <div className="space-y-2">
+      <ScrollArea className={`flex-1 min-h-0 game-scrollbar ${isMobile ? 'px-1 py-0.5' : 'p-2'}`}>
+        <div className={`${isMobile ? 'space-y-0.5' : 'space-y-2'}`}>
           {loading ? (
-            <div className="text-gray-500 text-sm text-center">
-              Загрузка сообщений...
+            <div className={`text-gray-500 text-center ${isMobile ? 'text-xs py-1' : 'text-sm'}`}>
+              Загрузка...
             </div>
           ) : messages.length === 0 ? (
-            <div className="text-gray-500 text-sm text-center">
-              Чат пуст. Будьте первым, кто начнет беседу!
+            <div className={`text-gray-500 text-center ${isMobile ? 'text-xs py-1' : 'text-sm'}`}>
+              {isMobile ? 'Чат пуст' : 'Чат пуст. Будьте первым, кто начнет беседу!'}
             </div>
           ) : (
             messages.map((message) => (
-              <div key={message.id} className="text-white text-sm py-1">
-                <span className="text-gray-500 text-xs">{formatTime(message.created_at)}</span>
-                <span className="text-red-400 font-bold text-xs ml-2">{message.player_name}</span>
-                <span className="ml-2 break-words">{message.message}</span>
+              <div key={message.id} className={`text-white ${isMobile ? 'py-0.5 text-xs' : 'py-1 text-sm'}`}>
+                {isMobile ? (
+                  <div className="flex items-start gap-1">
+                    <span className="text-red-400 font-bold text-xs flex-shrink-0">{message.player_name}:</span>
+                    <span className="break-words">{message.message}</span>
+                  </div>
+                ) : (
+                  <>
+                    <span className="text-gray-500 text-xs">{formatTime(message.created_at)}</span>
+                    <span className="text-red-400 font-bold text-xs ml-2">{message.player_name}</span>
+                    <span className="ml-2 break-words">{message.message}</span>
+                  </>
+                )}
               </div>
             ))
           )}
         </div>
       </ScrollArea>
       
-      <div className="p-2 border-t medieval-border flex-shrink-0">
-        <div className="flex gap-2">
+      <div className={`border-t medieval-border flex-shrink-0 ${isMobile ? 'px-1 py-0.5' : 'p-2'}`}>
+        <div className={`flex ${isMobile ? 'gap-1' : 'gap-2'}`}>
           <Input
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Введите сообщение..."
-            className="medieval-bg-tertiary medieval-border text-white text-sm flex-1 shadow-[inset_0_1px_0_rgba(255,255,255,.06)]"
+            placeholder={isMobile ? "Сообщение..." : "Введите сообщение..."}
+            className={`medieval-bg-tertiary medieval-border text-white flex-1 shadow-[inset_0_1px_0_rgba(255,255,255,.06)] ${isMobile ? 'text-xs h-7' : 'text-sm'}`}
             style={{
               background: 'linear-gradient(145deg, hsl(var(--medieval-bg-tertiary)), hsl(var(--medieval-bg-secondary)))'
             }}
@@ -199,10 +210,10 @@ const Chat = ({ userId, username }: ChatProps) => {
           />
           <Button
             onClick={sendMessage}
-            className="bg-red-600 hover:bg-red-700 text-white text-sm px-3 flex-shrink-0"
+            className={`bg-red-600 hover:bg-red-700 text-white flex-shrink-0 ${isMobile ? 'text-xs px-2 h-7' : 'text-sm px-3'}`}
             disabled={!newMessage.trim()}
           >
-            ↵
+            {isMobile ? '↵' : '↵'}
           </Button>
         </div>
       </div>

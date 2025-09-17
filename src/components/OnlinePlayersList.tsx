@@ -3,6 +3,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { formatPlayerName } from '@/utils/playerUtils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface OnlinePlayer {
   id: string;
@@ -12,6 +13,7 @@ interface OnlinePlayer {
 }
 
 const OnlinePlayersList = () => {
+  const isMobile = useIsMobile();
   const [onlinePlayers, setOnlinePlayers] = useState<OnlinePlayer[]>([]);
   const { toast } = useToast();
 
@@ -96,27 +98,29 @@ const OnlinePlayersList = () => {
 
   return (
     <div className="h-full flex flex-col online-list-area">
-      <ScrollArea className="flex-grow p-1 game-scrollbar">
-        <div className="space-y-1">
+      <ScrollArea className={`flex-grow game-scrollbar ${isMobile ? 'px-0.5 py-0.5' : 'p-1'}`}>
+        <div className={`${isMobile ? 'space-y-0.5' : 'space-y-1'}`}>
           {onlinePlayers.length > 0 ? (
             onlinePlayers.map((player) => (
-              <div key={player.id} className="medieval-bg-tertiary rounded p-1 hover:medieval-bg-secondary transition-all duration-200 shadow-[0_2px_4px_rgba(0,0,0,.2)] hover:shadow-[0_4px_8px_rgba(0,0,0,.3)]"
+              <div key={player.id} className={`medieval-bg-tertiary rounded hover:medieval-bg-secondary transition-all duration-200 shadow-[0_2px_4px_rgba(0,0,0,.2)] hover:shadow-[0_4px_8px_rgba(0,0,0,.3)] ${isMobile ? 'px-0.5 py-0.5' : 'p-1'}`}
                    style={{
                      background: 'linear-gradient(145deg, hsl(var(--medieval-bg-tertiary)), hsl(var(--medieval-bg-secondary)))'
                    }}>
                 <div className="flex items-center gap-1">
-                  <span className="text-sm">{getClassIcon(player.character_class)}</span>
+                  <span className={`${isMobile ? 'text-xs' : 'text-sm'}`}>{getClassIcon(player.character_class)}</span>
                   <div className="flex-1 min-w-0">
-                    <div className={`font-bold text-sm truncate ${getClassColor(player.character_class)}`}>
-                      {formatPlayerName(player.username, player.level)}
+                    <div className={`font-bold truncate ${getClassColor(player.character_class)} ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                      {isMobile ? player.username : formatPlayerName(player.username, player.level)}
                     </div>
                   </div>
-                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                  <div className={`bg-green-400 rounded-full ${isMobile ? 'w-1.5 h-1.5' : 'w-2 h-2'}`}></div>
                 </div>
               </div>
             ))
           ) : (
-            <div className="text-center text-gray-400 text-sm p-1">Нет игроков онлайн</div>
+            <div className={`text-center text-gray-400 ${isMobile ? 'text-xs py-1 px-1' : 'text-sm p-1'}`}>
+              {isMobile ? 'Нет игроков' : 'Нет игроков онлайн'}
+            </div>
           )}
         </div>
       </ScrollArea>
