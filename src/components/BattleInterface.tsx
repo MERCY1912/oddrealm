@@ -83,30 +83,39 @@ const BattleInterface = ({
               {/* Карточка игрока */}
               <div className="panel panel--tint panel--warm p-2">
                 <div className="text-center mb-2">
-                  <div className="font-bold text-xs text-white mb-1">{player.username}</div>
-                  <div className="text-xs text-gray-400">Уровень {player.level}</div>
+                  <div className="font-bold text-xs text-white mb-1">{player.username} [{player.level}]</div>
                 </div>
                 
-                {/* Улучшенная экипировка игрока с вертикальными полосками здоровья */}
-                <div className="flex items-center gap-1 mb-2">
-                  {/* Левая вертикальная полоска здоровья */}
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="text-[8px] text-red-400 writing-mode-vertical text-center">
-                      HP
-                    </div>
-                    <div className="w-1 h-16 bg-gray-700 rounded-full flex flex-col justify-end">
+                {/* Горизонтальные полоски HP и MP */}
+                <div className="flex gap-2 mb-2">
+                  <div className="flex-1">
+                    <div className="text-[8px] text-red-400 mb-1">HP</div>
+                    <div className="w-full h-2 bg-gray-700 rounded-full">
                       <div 
-                        className="bg-red-500 w-full rounded-full transition-all duration-300"
-                        style={{ height: `${((playerStats?.health || player.health) / (playerStats?.maxHealth || player.maxHealth)) * 100}%` }}
+                        className="bg-red-500 h-full rounded-full transition-all duration-300"
+                        style={{ width: `${((playerStats?.health || player.health) / (playerStats?.maxHealth || player.maxHealth)) * 100}%` }}
                       ></div>
                     </div>
                     <div className="text-[6px] text-red-400 text-center">
                       {playerStats?.health || player.health}/{playerStats?.maxHealth || player.maxHealth}
                     </div>
                   </div>
-                  
-                  {/* Центральная область с экипировкой и аватаром */}
-                  <div className="flex justify-center items-start gap-1">
+                  <div className="flex-1">
+                    <div className="text-[8px] text-blue-400 mb-1">MP</div>
+                    <div className="w-full h-2 bg-gray-700 rounded-full">
+                      <div 
+                        className="bg-blue-500 h-full rounded-full transition-all duration-300"
+                        style={{ width: `${((playerStats?.mana || player.mana) / (playerStats?.maxMana || player.maxMana)) * 100}%` }}
+                      ></div>
+                    </div>
+                    <div className="text-[6px] text-blue-400 text-center">
+                      {playerStats?.mana || player.mana}/{playerStats?.maxMana || player.maxMana}
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Улучшенная экипировка игрока с увеличенным аватаром */}
+                <div className="flex justify-center items-start gap-1">
                     {/* Левая колонка слотов */}
                     <div className="flex flex-col items-center">
                       {/* Шлем - увеличенный размер */}
@@ -132,7 +141,7 @@ const BattleInterface = ({
                     </div>
                     
                     {/* Центральная область — аватар героя - увеличенный размер */}
-                    <div className="w-16 h-24 bg-gray-700 border border-gray-500 rounded flex items-center justify-center">
+                    <div className="w-20 h-28 bg-gray-700 border border-gray-500 rounded flex items-center justify-center">
                       <img
                         src={player?.character_image_url || player?.avatar_url || "/lovable-uploads/d34b59ae-7d60-4c9a-afce-737fbd38a77e.png"}
                         alt="Character"
@@ -179,52 +188,45 @@ const BattleInterface = ({
                       </div>
                     </div>
                   </div>
-                  
-                  {/* Правая вертикальная полоска маны */}
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="text-[8px] text-blue-400 writing-mode-vertical text-center">
-                      MP
-                    </div>
-                    <div className="w-1 h-16 bg-gray-700 rounded-full flex flex-col justify-end">
-                      <div 
-                        className="bg-blue-500 w-full rounded-full transition-all duration-300"
-                        style={{ height: `${((playerStats?.mana || player.mana) / (playerStats?.maxMana || player.maxMana)) * 100}%` }}
-                      ></div>
-                    </div>
-                    <div className="text-[6px] text-blue-400 text-center">
-                      {playerStats?.mana || player.mana}/{playerStats?.maxMana || player.maxMana}
-                    </div>
-                  </div>
                 </div>
               </div>
 
               {/* Карточка противника */}
               <div className="panel panel--tint panel--warm p-2">
                 <div className="text-center mb-2">
-                  <div className="font-bold text-xs text-white mb-1">{selectedBot.name}</div>
-                  <div className="text-xs text-gray-400">Уровень {selectedBot.level}</div>
+                  <div className="font-bold text-xs text-white mb-1">{selectedBot.name} [{selectedBot.level}]</div>
                 </div>
                 
-                {/* Улучшенная экипировка противника с вертикальными полосками здоровья */}
-                <div className="flex items-center gap-1 mb-2">
-                  {/* Левая вертикальная полоска здоровья */}
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="text-[8px] text-red-400 writing-mode-vertical text-center">
-                      HP
-                    </div>
-                    <div className="w-1 h-16 bg-gray-700 rounded-full flex flex-col justify-end">
+                {/* Горизонтальные полоски HP и MP */}
+                <div className="flex gap-2 mb-2">
+                  <div className="flex-1">
+                    <div className="text-[8px] text-red-400 mb-1">HP</div>
+                    <div className="w-full h-2 bg-gray-700 rounded-full">
                       <div 
-                        className="bg-red-500 w-full rounded-full transition-all duration-300"
-                        style={{ height: `${(currentBotHealth / selectedBot.health) * 100}%` }}
+                        className="bg-red-500 h-full rounded-full transition-all duration-300"
+                        style={{ width: `${(currentBotHealth / selectedBot.health) * 100}%` }}
                       ></div>
                     </div>
                     <div className="text-[6px] text-red-400 text-center">
                       {currentBotHealth}/{selectedBot.health}
                     </div>
                   </div>
-                  
-                  {/* Центральная область с экипировкой и аватаром */}
-                  <div className="flex justify-center items-start gap-1">
+                  <div className="flex-1">
+                    <div className="text-[8px] text-blue-400 mb-1">MP</div>
+                    <div className="w-full h-2 bg-gray-700 rounded-full">
+                      <div 
+                        className="bg-blue-500 h-full rounded-full transition-all duration-300"
+                        style={{ width: `${(selectedBot.mana / selectedBot.maxMana) * 100}%` }}
+                      ></div>
+                    </div>
+                    <div className="text-[6px] text-blue-400 text-center">
+                      {selectedBot.mana}/{selectedBot.maxMana}
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Улучшенная экипировка противника с увеличенным аватаром */}
+                <div className="flex justify-center items-start gap-1">
                     {/* Левая колонка слотов */}
                     <div className="flex flex-col items-center">
                       {/* Шлем - увеличенный размер */}
@@ -240,7 +242,7 @@ const BattleInterface = ({
                     </div>
                     
                     {/* Центральная область — аватар бота - увеличенный размер */}
-                    <div className="w-16 h-24 bg-gray-700 border border-gray-500 rounded flex items-center justify-center">
+                    <div className="w-20 h-28 bg-gray-700 border border-gray-500 rounded flex items-center justify-center">
                       {selectedBot?.image && (selectedBot.image.includes('.jpg') || selectedBot.image.includes('.png') || selectedBot.image.includes('.jpeg') || selectedBot.image.includes('.gif') || selectedBot.image.includes('.webp')) ? (
                         <img
                           src={selectedBot.image}
@@ -279,22 +281,6 @@ const BattleInterface = ({
                       <div className="w-6 h-8 bg-gray-600 border border-gray-500 rounded"></div>
                       {/* Ботинки */}
                       <div className="w-6 h-4 bg-gray-600 border border-gray-500 rounded"></div>
-                    </div>
-                  </div>
-                  
-                  {/* Правая вертикальная полоска маны */}
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="text-[8px] text-blue-400 writing-mode-vertical text-center">
-                      MP
-                    </div>
-                    <div className="w-1 h-16 bg-gray-700 rounded-full flex flex-col justify-end">
-                      <div 
-                        className="bg-blue-500 w-full rounded-full transition-all duration-300"
-                        style={{ height: `${((selectedBot.mana || 50) / (selectedBot.maxMana || 50)) * 100}%` }}
-                      ></div>
-                    </div>
-                    <div className="text-[6px] text-blue-400 text-center">
-                      {selectedBot.mana || 50}/{selectedBot.maxMana || 50}
                     </div>
                   </div>
                 </div>
