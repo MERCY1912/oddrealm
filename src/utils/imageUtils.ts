@@ -116,3 +116,16 @@ export const normalizeItemImageUrl = (imageUrl: string | undefined): string | un
   return normalizedUrl;
 };
 
+/**
+ * Проверяет доступность изображения по URL
+ */
+export const checkImageAvailability = async (imageUrl: string): Promise<boolean> => {
+  try {
+    const response = await fetch(imageUrl, { method: 'HEAD' });
+    return response.ok;
+  } catch (error) {
+    console.error('Error checking image availability:', error);
+    return false;
+  }
+};
+

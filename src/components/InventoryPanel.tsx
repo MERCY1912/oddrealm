@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Player, Item } from '@/types/game';
 import { normalizeItemImageUrl } from '@/utils/imageUtils';
+import ItemTooltip from './ItemTooltip';
 
 interface InventoryPanelProps {
   player: Player;
@@ -136,7 +137,7 @@ const InventoryPanel = ({ player, inventory = [], onEquipItem, onRemoveFromInven
               const isDragged = draggedItem === item?.id;
               const isNewItem = newItemSlot === index;
               
-              return (
+              const slotElement = (
                 <div 
                   key={index}
                   draggable={!!item}
@@ -169,6 +170,8 @@ const InventoryPanel = ({ player, inventory = [], onEquipItem, onRemoveFromInven
                           className="w-full h-full object-contain rounded"
                           onError={(e) => {
                             console.error('Image failed to load in InventoryPanel:', item.image_url, 'for item:', item.name);
+                            console.error('Normalized URL:', normalizeItemImageUrl(item.image_url));
+                            console.error('Error details:', e);
                             e.currentTarget.style.display = 'none';
                             const parent = e.currentTarget.parentElement;
                             if (parent) {
@@ -177,6 +180,9 @@ const InventoryPanel = ({ player, inventory = [], onEquipItem, onRemoveFromInven
                               emojiDiv.textContent = getTypeIcon(item.type);
                               parent.appendChild(emojiDiv);
                             }
+                          }}
+                          onLoad={() => {
+                            console.log('Image loaded successfully in InventoryPanel:', item.image_url, 'for item:', item.name);
                           }}
                         />
                       ) : (
@@ -193,6 +199,17 @@ const InventoryPanel = ({ player, inventory = [], onEquipItem, onRemoveFromInven
                   )}
                 </div>
               );
+
+              // Обертываем в тултип только если есть предмет
+              if (item && 'stats' in item && 'price' in item && 'description' in item) {
+                return (
+                  <ItemTooltip key={index} item={item as Item} side="top">
+                    {slotElement}
+                  </ItemTooltip>
+                );
+              }
+
+              return slotElement;
             })}
           </div>
         </div>

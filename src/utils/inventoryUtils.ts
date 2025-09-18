@@ -38,6 +38,17 @@ export const loadInventoryFromSupabase = async (playerId: string): Promise<Item[
         description: itemData.description || '',
         image_url: itemData.image_url || '',
       } as Item;
+      
+      // Логируем предмет "Величие холодной стали" при загрузке из инвентаря
+      if (processedItem.name && processedItem.name.includes('холодной')) {
+        console.log('loadInventoryFromSupabase: Loading "Величие холодной стали" from inventory:', {
+          rawItemData: itemData,
+          processedItem,
+          image_url: processedItem.image_url,
+          rarity: processedItem.rarity
+        });
+      }
+      
       console.log('loadInventoryFromSupabase: Processed item:', processedItem);
       return processedItem;
     }) || [];
@@ -52,6 +63,16 @@ export const loadInventoryFromSupabase = async (playerId: string): Promise<Item[
 
 export const addItemToInventory = async (playerId: string, item: Item): Promise<boolean> => {
   try {
+    // Логируем предмет "Величие холодной стали" перед добавлением в инвентарь
+    if (item.name && item.name.includes('холодной')) {
+      console.log('addItemToInventory: Adding "Величие холодной стали" to inventory:', {
+        playerId,
+        item,
+        image_url: item.image_url,
+        rarity: item.rarity
+      });
+    }
+
     // Check if item already exists in inventory
     const { data: existingItems, error: checkError } = await supabase
       .from('player_inventory')
@@ -126,6 +147,11 @@ export const addItemToInventory = async (playerId: string, item: Item): Promise<
       }
     }
 
+    // Логируем успешное добавление предмета "Величие холодной стали"
+    if (item.name && item.name.includes('холодной')) {
+      console.log('addItemToInventory: Successfully added "Величие холодной стали" to inventory');
+    }
+    
     return true;
   } catch (error) {
     console.error('Error adding item to inventory:', error);

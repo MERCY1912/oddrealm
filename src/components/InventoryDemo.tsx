@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getEquipmentIcon } from './EquipmentIcons';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import EnhancedItemTooltip from '@/components/EnhancedItemTooltip';
 
 const InventoryDemo = () => {
   const [inventory, setInventory] = useState<Item[]>([]);
@@ -34,24 +34,6 @@ const InventoryDemo = () => {
     setInventory([]);
   };
 
-  const getItemTooltip = (item: Item) => (
-    <div className="p-3 max-w-xs">
-      <div className="font-bold text-yellow-300 mb-2">{item.name}</div>
-      <div className="text-sm text-gray-300 mb-2">{item.description}</div>
-      
-      <div className="space-y-1">
-        <div className="text-xs font-semibold text-gray-400">Характеристики:</div>
-        {item.stats.attack && <div className="text-red-400 text-xs">⚔️ Атака: +{item.stats.attack}</div>}
-        {item.stats.defense && <div className="text-blue-400 text-xs">🛡️ Защита: +{item.stats.defense}</div>}
-        {item.stats.health && <div className="text-green-400 text-xs">❤️ Здоровье: +{item.stats.health}</div>}
-        {item.stats.mana && <div className="text-purple-400 text-xs">🔮 Мана: +{item.stats.mana}</div>}
-      </div>
-      
-      {item.price > 0 && (
-        <div className="text-yellow-200 text-xs mt-2">Цена: {item.price} золота</div>
-      )}
-    </div>
-  );
 
   const ItemGrid = ({ items }: { items: Item[] }) => (
     <div className="flex-1 overflow-y-auto">
@@ -62,25 +44,20 @@ const InventoryDemo = () => {
       ) : (
         <div className="grid grid-cols-8 gap-2 auto-rows-min py-0.5">
           {items.map((item, index) => (
-            <Tooltip key={`${item.id}-${index}`}>
-              <TooltipTrigger asChild>
-                <div className="relative w-12 h-12 inventory-empty-slot cursor-pointer hover:border-yellow-500 transition-colors group">
-                  <div className="w-full h-full flex items-center justify-center p-1">
-                    <span className="text-base">{getEquipmentIcon(item.name, item.type)}</span>
-                  </div>
-                  
-                  {/* Rarity border overlay */}
-                  <div className={`absolute inset-0 border-2 rounded pointer-events-none ${
-                    item.rarity === 'legendary' ? 'border-yellow-400' :
-                    item.rarity === 'epic' ? 'border-purple-400' :
-                    item.rarity === 'rare' ? 'border-blue-400' : 'border-transparent'
-                  }`} />
+            <EnhancedItemTooltip key={`${item.id}-${index}`} item={item} side="right">
+              <div className="relative w-12 h-12 inventory-empty-slot cursor-pointer hover:border-yellow-500 transition-colors group">
+                <div className="w-full h-full flex items-center justify-center p-1">
+                  <span className="text-base">{getEquipmentIcon(item.name, item.type)}</span>
                 </div>
-              </TooltipTrigger>
-              <TooltipContent side="right" className="bg-gray-900/95 backdrop-blur-sm border border-gray-500/50 text-white shadow-xl">
-                {getItemTooltip(item)}
-              </TooltipContent>
-            </Tooltip>
+                
+                {/* Rarity border overlay */}
+                <div className={`absolute inset-0 border-2 rounded pointer-events-none ${
+                  item.rarity === 'legendary' ? 'border-yellow-400' :
+                  item.rarity === 'epic' ? 'border-purple-400' :
+                  item.rarity === 'rare' ? 'border-blue-400' : 'border-transparent'
+                }`} />
+              </div>
+            </EnhancedItemTooltip>
           ))}
         </div>
       )}

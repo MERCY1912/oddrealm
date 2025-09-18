@@ -23,6 +23,7 @@ import ShopLocation from './locations/ShopLocation';
 import DetailedStatsPanel from './DetailedStatsPanel';
 import InventoryPanel from './InventoryPanel';
 import ArenaHallView from './ArenaHallView';
+import DungeonSystem from './DungeonSystem';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface GameInterfaceProps {
@@ -169,12 +170,6 @@ const GameInterface = ({ player, onPlayerUpdate, onLogout, onOpenSettings, onOpe
     localStorage.setItem('online-list-hidden-mobile', newState.toString());
   };
 
-  // Демонстрационные уведомления (можно удалить в продакшене)
-  const showDemoNotifications = () => {
-    addNotification('loot', 'Получен редкий предмет!', '');
-    setTimeout(() => addNotification('levelup', 'Новый уровень!', ''), 1000);
-    setTimeout(() => addNotification('achievement', 'Достижение разблокировано!', ''), 2000);
-  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -188,28 +183,41 @@ const GameInterface = ({ player, onPlayerUpdate, onLogout, onOpenSettings, onOpe
             </h1>
             
             {/* Кнопки навигации по центру */}
-            {currentLocation === 'character' && (
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  onClick={() => handleLocationNavigation('city')}
-                  className="medieval-button px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium"
-                >
-                  Город
-                </Button>
-                <Button
-                  onClick={() => handleLocationNavigation('arena')}
-                  className="medieval-button px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium"
-                >
-                  Арена
-                </Button>
-                <Button
-                  onClick={() => handleLocationNavigation('infirmary')}
-                  className="medieval-button px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium"
-                >
-                  Лечебница
-                </Button>
-              </div>
-            )}
+            <div className="flex flex-wrap gap-2">
+              <Button
+                onClick={() => handleLocationNavigation('character')}
+                className={`medieval-button px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium ${
+                  currentLocation === 'character' ? 'bg-blue-600 text-white' : ''
+                }`}
+                title="Вернуться к персонажу и экипировке"
+              >
+                🏠 Домой
+              </Button>
+              <Button
+                onClick={() => handleLocationNavigation('city')}
+                className={`medieval-button px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium ${
+                  currentLocation === 'city' ? 'bg-blue-600 text-white' : ''
+                }`}
+              >
+                Город
+              </Button>
+              <Button
+                onClick={() => handleLocationNavigation('arena')}
+                className={`medieval-button px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium ${
+                  currentLocation === 'arena' ? 'bg-blue-600 text-white' : ''
+                }`}
+              >
+                Арена
+              </Button>
+              <Button
+                onClick={() => handleLocationNavigation('infirmary')}
+                className={`medieval-button px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium ${
+                  currentLocation === 'infirmary' ? 'bg-blue-600 text-white' : ''
+                }`}
+              >
+                Лечебница
+              </Button>
+            </div>
             
             <div className="flex flex-wrap items-center gap-2 sm:gap-4">
               {/* Чекбоксы для мобильной версии - только на мобильных */}
@@ -241,12 +249,6 @@ const GameInterface = ({ player, onPlayerUpdate, onLogout, onOpenSettings, onOpe
                    {player.gold} золота
                 </span>
               </div>
-              <Button 
-                onClick={showDemoNotifications}
-                className="px-2 sm:px-3 py-1 rounded-md bg-[#22232b] ring-1 ring-black/40 text-ash shadow-[inset_0_1px_0_rgba(255,255,255,.06)] hover:bg-[#272833] hover:text-white transition font-ui text-xs sm:text-sm"
-              >
-                FX Демо
-              </Button>
               {onOpenAdminPanel && (
                 <Button 
                   onClick={onOpenAdminPanel}
@@ -331,6 +333,14 @@ const GameInterface = ({ player, onPlayerUpdate, onLogout, onOpenSettings, onOpe
                         {/* Контент локации */}
                         {currentLocation === 'city' && (
                           <CityLocation onNavigate={handleLocationNavigation} />
+                        )}
+                        {currentLocation === 'dungeon' && (
+                          <DungeonSystem 
+                            player={player}
+                            onPlayerUpdate={onPlayerUpdate}
+                            onBack={() => handleLocationNavigation('city')}
+                            onAddToInventory={onAddToInventory}
+                          />
                         )}
                         {currentLocation === 'arena' && (
                           <>

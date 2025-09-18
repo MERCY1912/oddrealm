@@ -3,45 +3,63 @@ import { Equipment, Item, ItemType, ItemRarity, ItemStats, WeaponType, PlayerEqu
 
 export const saveEquipmentToSupabase = async (playerId: string, equipment: PlayerEquipmentDb) => {
   try {
-    console.log('saveEquipmentToSupabase: Saving equipment for player:', playerId, equipment);
+    console.log('saveEquipmentToSupabase: Saving equipment for player:', playerId);
+    console.log('saveEquipmentToSupabase: Equipment data:', JSON.stringify(equipment, null, 2));
     
     // Delete existing equipment for this player
-    await supabase
+    console.log('saveEquipmentToSupabase: Deleting existing equipment...');
+    const { error: deleteError } = await supabase
       .from('equipment')
       .delete()
       .eq('player_id', playerId);
+    
+    if (deleteError) {
+      console.error('Error deleting existing equipment:', deleteError);
+    } else {
+      console.log('saveEquipmentToSupabase: Existing equipment deleted successfully');
+    }
 
     // Insert new equipment with complete item data
     const equipmentEntries = Object.entries(equipment)
       .filter(([_, item]) => item !== null && item !== undefined)
-      .map(([slot, item]) => ({
-        player_id: playerId,
-        slot: slot,
-        item_data: {
-          name: item!.name,
-          stats: item!.stats || {},
-          // Store additional item data that might be needed
-          type: slot.replace(/\d/g, ''), // Remove numbers from slot name for type
-          rarity: item!.rarity || 'common',
-          price: item!.price || 0,
-          description: item!.description || `Equipped ${item!.name}`,
-          image_url: item!.image_url,
-          weaponType: item!.weaponType,
-          weapon_type: item!.weapon_type,
-        }
-      }));
+      .map(([slot, item]) => {
+        const entry = {
+          player_id: playerId,
+          slot: slot,
+          item_data: {
+            name: item!.name,
+            stats: item!.stats || {},
+            // Store additional item data that might be needed
+            type: slot.replace(/\d/g, ''), // Remove numbers from slot name for type
+            rarity: item!.rarity || 'common',
+            price: item!.price || 0,
+            description: item!.description || `Equipped ${item!.name}`,
+            image_url: item!.image_url,
+            weaponType: item!.weaponType,
+            weapon_type: item!.weapon_type,
+          }
+        };
+        console.log(`saveEquipmentToSupabase: Created entry for slot ${slot}:`, entry);
+        return entry;
+      });
 
     console.log('saveEquipmentToSupabase: Equipment entries to save:', equipmentEntries);
 
     if (equipmentEntries.length > 0) {
-      const { error } = await supabase
+      console.log('saveEquipmentToSupabase: Inserting equipment entries...');
+      const { data, error } = await supabase
         .from('equipment')
-        .insert(equipmentEntries);
+        .insert(equipmentEntries)
+        .select();
 
       if (error) {
         console.error('Error saving equipment:', error);
         return false;
+      } else {
+        console.log('saveEquipmentToSupabase: Equipment inserted successfully:', data);
       }
+    } else {
+      console.log('saveEquipmentToSupabase: No equipment entries to save');
     }
 
     console.log('saveEquipmentToSupabase: Equipment saved successfully');
@@ -98,6 +116,7 @@ export const loadEquipmentFromSupabase = async (playerId: string): Promise<Equip
     }
 
     // 2. Get player's equipped items from the 'equipment' table
+    console.log('loadEquipmentFromSupabase: Querying equipment table for player:', playerId);
     const { data: equipmentData, error: equipmentError } = await supabase
       .from('equipment')
       .select('slot, item_data')
@@ -109,6 +128,7 @@ export const loadEquipmentFromSupabase = async (playerId: string): Promise<Equip
     }
 
     console.log('loadEquipmentFromSupabase: Player equipment data:', equipmentData);
+    console.log('loadEquipmentFromSupabase: Number of equipment items found:', equipmentData?.length || 0);
 
     // 3. Construct the final equipment object with full item details
     const equipment: Equipment = {};

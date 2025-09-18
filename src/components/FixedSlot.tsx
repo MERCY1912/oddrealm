@@ -2,6 +2,7 @@ import React from 'react';
 import { Item } from '@/types/game';
 import EquipmentSlotPlaceholder from './EquipmentSlotPlaceholder';
 import { normalizeItemImageUrl } from '@/utils/imageUtils';
+import ItemTooltip from './ItemTooltip';
 
 interface FixedSlotProps {
   w: number;
@@ -160,7 +161,7 @@ export default function FixedSlot({
     }
   };
 
-  return (
+  const buttonElement = (
     <button 
       className={`empty-slot ${getRarityStyles()} grid place-items-center cursor-pointer transition-transform`}
       style={{ width: w, height: h }}
@@ -170,4 +171,15 @@ export default function FixedSlot({
       {getItemIcon() || <span className="text-ash/60 text-lg">◆</span>}
     </button>
   );
+
+  // Обертываем в тултип только если есть предмет
+  if (item) {
+    return (
+      <ItemTooltip item={item} side="top">
+        {buttonElement}
+      </ItemTooltip>
+    );
+  }
+
+  return buttonElement;
 }

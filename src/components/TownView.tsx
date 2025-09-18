@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import LocationHandler from './LocationHandler';
 import AncientTower from './AncientTower';
 import AdminPanel from './AdminPanel';
+import DungeonSystem from './DungeonSystem';
 
 interface TownViewProps {
   player: any;
@@ -22,6 +23,7 @@ const TownView = ({ player, onPlayerUpdate }: TownViewProps) => {
     { id: 'tavern', name: 'Трактир' },
     { id: 'temple', name: 'Храм' },
     { id: 'ancient-tower', name: 'Башня' },
+    { id: 'dungeons', name: '🏰 Подземелья' },
     { id: 'admin', name: '🛠️ Админ' }
   ];
 
@@ -43,6 +45,30 @@ const TownView = ({ player, onPlayerUpdate }: TownViewProps) => {
             <AncientTower 
               player={player}
               onPlayerUpdate={onPlayerUpdate}
+            />
+          </div>
+        </div>
+      );
+    }
+
+    if (selectedLocation === 'dungeons') {
+      return (
+        <div className="min-h-screen p-4">
+          <div className="flex justify-between items-center mb-6">
+            <Button 
+              onClick={() => setSelectedLocation(null)}
+              className="bg-gray-800 bg-opacity-80 text-white hover:bg-gray-700"
+            >
+              ← Назад в город
+            </Button>
+            <div className="text-yellow-400 font-bold">💰 {player.gold} золота</div>
+          </div>
+          
+          <div className="max-w-7xl mx-auto">
+            <DungeonSystem 
+              player={player}
+              onPlayerUpdate={onPlayerUpdate}
+              onBack={() => setSelectedLocation(null)}
             />
           </div>
         </div>

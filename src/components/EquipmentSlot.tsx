@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getEquipmentPlaceholder } from '@/utils/equipmentUtils';
 import { Item } from '@/types/game';
 import EquipmentSlotPlaceholder from './EquipmentSlotPlaceholder';
+import ItemTooltip from './ItemTooltip';
 
 interface EquipmentSlotProps {
   item: Item | undefined;
@@ -49,59 +49,6 @@ const EquipmentSlot = ({ item, slot, size, className = '' }: EquipmentSlotProps)
 
   const { width, height, emojiSize } = slotSizeMap[slot] || slotSizeMap.default;
 
-  const getItemTooltip = () => {
-    if (!isValidItem) return null;
-    
-    return (
-      <div className="p-3 space-y-2 max-w-xs">
-        <div className="font-bold text-yellow-300 text-lg">{item.name?.toUpperCase() || 'НЕИЗВЕСТНЫЙ ПРЕДМЕТ'}</div>
-        {item.rarity && (
-          <div className={`text-xs capitalize font-bold ${
-            item.rarity === 'legendary' ? 'text-orange-400' :
-            item.rarity === 'epic' ? 'text-purple-400' :
-            item.rarity === 'rare' ? 'text-blue-400' : 'text-gray-400'
-          }`}>
-            {item.rarity === 'legendary' ? 'Легендарный' :
-             item.rarity === 'epic' ? 'Эпический' :
-             item.rarity === 'rare' ? 'Редкий' : 'Обычный'}
-          </div>
-        )}
-        <div className="text-gray-300 text-sm">{item.description || '—'}</div>
-        {item.type && (
-          <div className="text-teal-300 text-xs">Тип: {item.type}</div>
-        )}
-        {item.weaponType && (
-          <div className="text-cyan-400 text-xs">Класс оружия: {item.weaponType}</div>
-        )}
-        {item.stats && typeof item.stats === 'object' && Object.keys(item.stats).length > 0 && (
-          <div>
-            <div className="text-green-400 text-sm font-semibold mb-1">Характеристики:</div>
-            <ul className="text-xs space-y-0.5">
-              {Object.entries(item.stats).map(([k, v]) => (
-                <li key={k}>
-                  <span className="text-gray-400">{k}:</span>{' '}
-                  <span className="text-white font-semibold">+{v}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-        {item.requirements && (
-          <div className="text-red-400 text-xs">Требования: {item.requirements}</div>
-        )}
-        {item.price && (
-          <div className="text-yellow-200 text-xs">Цена: {item.price} золота</div>
-        )}
-        {/* Безопасная проверка levelReq */}
-        {isValidItem && typeof item === 'object' && 'levelReq' in item && (item as any).levelReq && (
-          <div className="text-orange-300 text-xs">Мин. уровень: {(item as any).levelReq}</div>
-        )}
-        {item.id && (
-          <div className="text-gray-500 text-xs">ID: {item.id}</div>
-        )}
-      </div>
-    );
-  };
 
   const slotElement = (
     <div 
@@ -129,6 +76,7 @@ const EquipmentSlot = ({ item, slot, size, className = '' }: EquipmentSlotProps)
           style={{ width: '100%', height: '100%' }} 
           onError={(e) => {
             console.error('Image failed to load:', item.image_url, 'for item:', item.name);
+            console.error('Error details:', e);
             e.currentTarget.style.display = 'none';
             const parent = e.currentTarget.parentElement;
             if (parent) {
@@ -150,19 +98,9 @@ const EquipmentSlot = ({ item, slot, size, className = '' }: EquipmentSlotProps)
   }
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          {slotElement}
-        </TooltipTrigger>
-        <TooltipContent 
-          side="right" 
-          className="bg-gray-900/95 backdrop-blur-sm border border-gray-500/50 text-white max-w-xs z-50 shadow-xl"
-        >
-          {getItemTooltip()}
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <ItemTooltip item={item} side="right">
+      {slotElement}
+    </ItemTooltip>
   );
 };
 

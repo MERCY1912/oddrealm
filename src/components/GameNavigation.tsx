@@ -19,9 +19,25 @@ const navItems = [
 ];
 
 const GameNavigation = ({ activeTab, onTabClick, isInBattle }: GameNavigationProps) => {
+  const handleHomeClick = () => {
+    onTabClick('character');
+  };
+
   return (
     <nav className="mb-6">
       <div className="flex flex-wrap gap-2">
+        {/* Кнопка "Домой" */}
+        <Button
+          onClick={handleHomeClick}
+          variant={activeTab === 'character' ? 'default' : 'outline'}
+          className="bg-amber-600 text-white hover:bg-amber-700 border-amber-500"
+          disabled={isInBattle}
+          title="Вернуться к персонажу и экипировке"
+        >
+          🏠 Домой
+        </Button>
+        
+        {/* Остальные кнопки навигации */}
         {navItems.map((item) => (
           <Button
             key={item.id}

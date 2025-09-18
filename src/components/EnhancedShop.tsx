@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { fetchShopItems } from '@/data/shopApi';
 import { Skeleton } from './ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import ItemTooltip from './ItemTooltip';
 
 interface EnhancedShopProps {
   player: Player;
@@ -91,6 +92,16 @@ const EnhancedShop = ({ player, onPlayerUpdate, onAddToInventory }: EnhancedShop
     }
 
     try {
+      // Логируем предмет перед покупкой
+      if (item.name && item.name.includes('холодной')) {
+        console.log('EnhancedShop buyItem: Buying "Величие холодной стали":', {
+          item,
+          image_url: item.image_url,
+          rarity: item.rarity,
+          type: item.type
+        });
+      }
+
       // Обновляем золото игрока
       const updatedPlayer: Player = {
         ...player,
@@ -101,6 +112,7 @@ const EnhancedShop = ({ player, onPlayerUpdate, onAddToInventory }: EnhancedShop
       
       // Добавляем предмет в инвентарь
       if (onAddToInventory) {
+        console.log('EnhancedShop buyItem: Calling onAddToInventory with item:', item);
         await onAddToInventory(item);
       }
       
@@ -237,9 +249,10 @@ const EnhancedShop = ({ player, onPlayerUpdate, onAddToInventory }: EnhancedShop
                 key={category.id}
                 onClick={() => handleCategoryChange(category.id)}
                 variant={activeCategory === category.id ? "default" : "outline"}
-                className="text-sm px-4 py-2"
+                className="text-xs sm:text-sm px-2 sm:px-4 py-2 flex-1 sm:flex-none min-w-0"
               >
-                {category.icon} {category.name}
+                <span className="hidden sm:inline">{category.icon} </span>
+                <span className="truncate">{category.name}</span>
               </Button>
             ))}
           </div>
@@ -252,22 +265,23 @@ const EnhancedShop = ({ player, onPlayerUpdate, onAddToInventory }: EnhancedShop
                   key={subcategory.id}
                   onClick={() => setActiveSubcategory(subcategory.id)}
                   variant={activeSubcategory === subcategory.id ? "default" : "outline"}
-                  className="text-xs"
+                  className="text-xs flex-1 sm:flex-none min-w-0"
                   size="sm"
                 >
-                  {subcategory.icon} {subcategory.name}
+                  <span className="hidden sm:inline">{subcategory.icon} </span>
+                  <span className="truncate">{subcategory.name}</span>
                 </Button>
               ))}
             </div>
           )}
 
           {/* Элементы управления сортировкой и фильтрацией */}
-          <div className="flex flex-wrap gap-4 mb-6 border-t border-gray-600 pt-4">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mb-6 border-t border-gray-600 pt-4">
             {/* Сортировка */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-300">Сортировка:</span>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <span className="text-sm text-gray-300 whitespace-nowrap">Сортировка:</span>
               <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
-                <SelectTrigger className="w-32 bg-gray-700 border-gray-600 text-white">
+                <SelectTrigger className="flex-1 sm:w-32 bg-gray-700 border-gray-600 text-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-gray-800 border-gray-600">
@@ -282,17 +296,17 @@ const EnhancedShop = ({ player, onPlayerUpdate, onAddToInventory }: EnhancedShop
                 onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
                 variant="outline"
                 size="sm"
-                className="text-xs"
+                className="text-xs flex-shrink-0"
               >
                 {sortOrder === 'asc' ? '↑' : '↓'}
               </Button>
             </div>
 
             {/* Фильтр по редкости */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-300">Редкость:</span>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <span className="text-sm text-gray-300 whitespace-nowrap">Редкость:</span>
               <Select value={filterRarity} onValueChange={(value: any) => setFilterRarity(value)}>
-                <SelectTrigger className="w-32 bg-gray-700 border-gray-600 text-white">
+                <SelectTrigger className="flex-1 sm:w-32 bg-gray-700 border-gray-600 text-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-gray-800 border-gray-600">
@@ -306,7 +320,7 @@ const EnhancedShop = ({ player, onPlayerUpdate, onAddToInventory }: EnhancedShop
             </div>
 
             {/* Счетчик предметов */}
-            <div className="flex items-center gap-2 ml-auto">
+            <div className="flex items-center gap-2 w-full sm:w-auto sm:ml-auto">
               <span className="text-sm text-gray-300">
                 Найдено: {getCurrentItems().length} предметов
               </span>
@@ -326,26 +340,25 @@ const EnhancedShop = ({ player, onPlayerUpdate, onAddToInventory }: EnhancedShop
             
             {!isLoading && getCurrentItems().length > 0 && (
               <div className="space-y-2">
-                {/* Заголовок таблицы */}
-                <div className="grid grid-cols-12 gap-4 p-3 bg-gray-800 rounded-lg text-sm font-medium text-gray-300">
+                {/* Заголовок таблицы - скрыт на мобильных */}
+                <div className="hidden sm:grid grid-cols-12 gap-4 p-4 bg-gray-800 rounded-lg text-sm font-medium text-gray-300">
                   <div className="col-span-1">Иконка</div>
-                  <div className="col-span-3">Название</div>
+                  <div className="col-span-6">Название и характеристики</div>
                   <div className="col-span-2">Редкость</div>
-                  <div className="col-span-2">Характеристики</div>
                   <div className="col-span-1">Уровень</div>
-                  <div className="col-span-2">Цена</div>
+                  <div className="col-span-1">Цена</div>
                   <div className="col-span-1">Действие</div>
                 </div>
                 
                 {/* Строки предметов */}
                 {getCurrentItems().map((item) => (
-                  <div 
-                    key={item.id}
-                    className="grid grid-cols-12 gap-4 p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors items-center"
-                  >
+                  <div key={item.id}>
+                    {/* Десктопная версия */}
+                    <ItemTooltip item={item} side="top">
+                      <div className="hidden sm:grid grid-cols-12 gap-4 p-6 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors items-start cursor-pointer min-h-[200px]">
                     {/* Иконка */}
                     <div className="col-span-1">
-                      <div className="w-10 h-10 text-2xl bg-gray-800 rounded flex items-center justify-center overflow-hidden">
+                      <div className="w-16 h-16 text-3xl bg-gray-800 rounded flex items-center justify-center overflow-hidden">
                         {item.image_url ? (
                           <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
                         ) : (
@@ -354,25 +367,182 @@ const EnhancedShop = ({ player, onPlayerUpdate, onAddToInventory }: EnhancedShop
                       </div>
                     </div>
                     
-                    {/* Название */}
-                    <div className="col-span-3">
-                      <div className="font-bold text-white text-sm">{item.name}</div>
-                      <div className="text-xs text-gray-400 truncate">{item.description}</div>
+                    {/* Название и характеристики */}
+                    <div className="col-span-6">
+                      <div className="font-bold text-white text-lg mb-2">{item.name}</div>
+                      <div className="text-sm text-gray-300 mb-3">{item.description}</div>
+                      
+                      {/* Основная информация списком */}
+                      <div className="space-y-1 text-sm mb-3">
+                        {item.weight && (
+                          <div className="text-gray-400">
+                            ⚖️ Вес: {item.weight}
+                          </div>
+                        )}
+                        {item.durability && (
+                          <div className="text-yellow-400">
+                            🛡️ Прочность: {item.durability.current}/{item.durability.max}
+                          </div>
+                        )}
                       {item.requirements && (
-                        <div className="text-xs text-red-400 mt-1">
+                          <div className="text-red-400">
                           📋 {item.requirements}
                         </div>
                       )}
-                      {item.weight && (
-                        <div className="text-xs text-gray-500 mt-1">
-                          ⚖️ Вес: {item.weight}
+                      </div>
+
+                      {/* Характеристики */}
+                      <div className="space-y-2">
+                        {/* Основные характеристики */}
+                        <div>
+                          <div className="text-sm font-semibold text-blue-400 mb-1">Основные характеристики:</div>
+                          <div className="space-y-1">
+                            {Object.entries(item.stats).filter(([stat, value]) => 
+                              value && value !== 0 && ['attack', 'defense', 'health', 'mana'].includes(stat)
+                            ).map(([stat, value]) => {
+                              const statsMap: Record<string, {label: string, color: string, icon: string}> = {
+                                attack: { label: 'Атака', color: 'text-red-400', icon: '⚔️'},
+                                defense: { label: 'Защита', color: 'text-blue-400', icon: '🛡️'},
+                                health: { label: 'Здоровье', color: 'text-green-400', icon: '❤️'},
+                                mana: { label: 'Мана', color: 'text-purple-400', icon: '🔮'},
+                              };
+                              return (
+                                <div key={stat} className={`text-sm ${statsMap[stat].color} flex items-center gap-2`}>
+                                  <span>{statsMap[stat].icon}</span>
+                                  <span>{statsMap[stat].label}: +{value}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
-                      )}
-                      {item.durability && (
-                        <div className="text-xs text-yellow-400 mt-1">
-                          🛡️ Прочность: {item.durability.current}/{item.durability.max}
+
+                        {/* Атрибуты */}
+                        <div>
+                          <div className="text-sm font-semibold text-orange-400 mb-1">Атрибуты:</div>
+                          <div className="space-y-1">
+                            {Object.entries(item.stats).filter(([stat, value]) => 
+                              value && value !== 0 && ['strength', 'dexterity', 'luck', 'endurance', 'magic', 'intuition'].includes(stat)
+                            ).map(([stat, value]) => {
+                              const statsMap: Record<string, {label: string, color: string, icon: string}> = {
+                                strength: { label: 'Сила', color: 'text-orange-400', icon: '💪'},
+                                dexterity: { label: 'Ловкость', color: 'text-cyan-400', icon: '🤸'},
+                                luck: { label: 'Удача', color: 'text-yellow-400', icon: '🍀'},
+                                endurance: { label: 'Выносливость', color: 'text-amber-400', icon: '🏃'},
+                                magic: { label: 'Магия', color: 'text-indigo-400', icon: '🧙'},
+                                intuition: { label: 'Интуиция', color: 'text-pink-400', icon: '🔮'},
+                              };
+                              return (
+                                <div key={stat} className={`text-sm ${statsMap[stat].color} flex items-center gap-2`}>
+                                  <span>{statsMap[stat].icon}</span>
+                                  <span>{statsMap[stat].label}: +{value}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
+
+                        {/* Модификаторы */}
+                        <div>
+                          <div className="text-sm font-semibold text-purple-400 mb-1">Модификаторы:</div>
+                          <div className="space-y-1">
+                            {Object.entries(item.stats).filter(([stat, value]) => 
+                              value && value !== 0 && ['criticalChance', 'antiCriticalChance', 'dodgeChance', 'antiDodgeChance', 'vampirism', 'blockChance'].includes(stat)
+                            ).map(([stat, value]) => {
+                              const statsMap: Record<string, {label: string, color: string, icon: string}> = {
+                                criticalChance: { label: 'Критический удар', color: 'text-orange-400', icon: '💥'},
+                                antiCriticalChance: { label: 'Защита от крита', color: 'text-orange-600', icon: '🛡️💥'},
+                                dodgeChance: { label: 'Уворот', color: 'text-cyan-400', icon: '💨'},
+                                antiDodgeChance: { label: 'Точность', color: 'text-cyan-600', icon: '🎯'},
+                                vampirism: { label: 'Вампиризм', color: 'text-red-300', icon: '🩸'},
+                                blockChance: { label: 'Блок', color: 'text-gray-400', icon: '🛡️'},
+                              };
+                              return (
+                                <div key={stat} className={`text-sm ${statsMap[stat].color} flex items-center gap-2`}>
+                                  <span>{statsMap[stat].icon}</span>
+                                  <span>{statsMap[stat].label}: +{value}%</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Сопротивления */}
+                        <div>
+                          <div className="text-sm font-semibold text-red-400 mb-1">Сопротивления:</div>
+                          <div className="space-y-1">
+                            {Object.entries(item.stats).filter(([stat, value]) => 
+                              value && value !== 0 && ['fireResistance', 'coldResistance', 'darkResistance', 'crushResistance'].includes(stat)
+                            ).map(([stat, value]) => {
+                              const statsMap: Record<string, {label: string, color: string, icon: string}> = {
+                                fireResistance: { label: 'Огнестойкость', color: 'text-red-500', icon: '🔥'},
+                                coldResistance: { label: 'Морозостойкость', color: 'text-blue-500', icon: '❄️'},
+                                darkResistance: { label: 'Тенестойкость', color: 'text-purple-500', icon: '🌑'},
+                                crushResistance: { label: 'Ударопрочность', color: 'text-gray-500', icon: '💥'},
+                              };
+                              return (
+                                <div key={stat} className={`text-sm ${statsMap[stat].color} flex items-center gap-2`}>
+                                  <span>{statsMap[stat].icon}</span>
+                                  <span>{statsMap[stat].label}: +{value}%</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Броня */}
+                        <div>
+                          <div className="text-sm font-semibold text-blue-300 mb-1">Броня:</div>
+                          <div className="space-y-1">
+                            {Object.entries(item.stats).filter(([stat, value]) => 
+                              value && value !== 0 && ['bodyArmor', 'headArmor', 'armArmor', 'legArmor'].includes(stat)
+                            ).map(([stat, value]) => {
+                              const statsMap: Record<string, {label: string, color: string, icon: string}> = {
+                                bodyArmor: { label: 'Броня тела', color: 'text-blue-300', icon: '👕'},
+                                headArmor: { label: 'Броня головы', color: 'text-blue-300', icon: '🎓'},
+                                armArmor: { label: 'Броня рук', color: 'text-blue-300', icon: '🧤'},
+                                legArmor: { label: 'Броня ног', color: 'text-blue-300', icon: '👢'},
+                              };
+                              return (
+                                <div key={stat} className={`text-sm ${statsMap[stat].color} flex items-center gap-2`}>
+                                  <span>{statsMap[stat].icon}</span>
+                                  <span>{statsMap[stat].label}: +{value}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Дополнительные характеристики */}
+                        <div>
+                          {Object.entries(item.stats).filter(([stat, value]) => 
+                            value && value !== 0 && !['attack', 'defense', 'health', 'mana', 'strength', 'dexterity', 'luck', 'endurance', 'magic', 'intuition', 'criticalChance', 'antiCriticalChance', 'dodgeChance', 'antiDodgeChance', 'vampirism', 'blockChance', 'fireResistance', 'coldResistance', 'darkResistance', 'crushResistance', 'bodyArmor', 'headArmor', 'armArmor', 'legArmor'].includes(stat)
+                          ).length > 0 && (
+                            <>
+                              <div className="text-sm font-semibold text-gray-400 mb-1">Дополнительно:</div>
+                              <div className="space-y-1">
+                                {Object.entries(item.stats).filter(([stat, value]) => 
+                                  value && value !== 0 && !['attack', 'defense', 'health', 'mana', 'strength', 'dexterity', 'luck', 'endurance', 'magic', 'intuition', 'criticalChance', 'antiCriticalChance', 'dodgeChance', 'antiDodgeChance', 'vampirism', 'blockChance', 'fireResistance', 'coldResistance', 'darkResistance', 'crushResistance', 'bodyArmor', 'headArmor', 'armArmor', 'legArmor'].includes(stat)
+                                ).map(([stat, value]) => {
+                                  const statsMap: Record<string, {label: string, color: string, icon: string}> = {
+                                    stealth: { label: 'Скрытность', color: 'text-purple-400', icon: '👤'},
+                                  };
+                                  if (!statsMap[stat]) return null;
+                                  return (
+                                    <div key={stat} className={`text-sm ${statsMap[stat].color} flex items-center gap-2`}>
+                                      <span>{statsMap[stat].icon}</span>
+                                      <span>{statsMap[stat].label}: +{value}</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </>
+                          )}
+                        </div>
+
+                        {Object.keys(item.stats).filter(stat => item.stats[stat as keyof typeof item.stats] && item.stats[stat as keyof typeof item.stats] !== 0).length === 0 && (
+                          <div className="text-sm text-gray-500">Нет характеристик</div>
                       )}
+                      </div>
                     </div>
                     
                     {/* Редкость */}
@@ -387,42 +557,6 @@ const EnhancedShop = ({ player, onPlayerUpdate, onAddToInventory }: EnhancedShop
                       )}
                     </div>
                     
-                    {/* Характеристики */}
-                    <div className="col-span-2">
-                      <div className="flex flex-wrap gap-1 text-xs">
-                        {Object.entries(item.stats).slice(0, 3).map(([stat, value]) => {
-                          if (!value) return null;
-                          const statsMap: Record<string, {label: string, color: string, icon: string}> = {
-                            attack: { label: 'Атака', color: 'text-red-400', icon: '⚔️'},
-                            defense: { label: 'Защита', color: 'text-blue-400', icon: '🛡️'},
-                            health: { label: 'Здоровье', color: 'text-green-400', icon: '❤️'},
-                            mana: { label: 'Мана', color: 'text-purple-400', icon: '🔮'},
-                            strength: { label: 'Сила', color: 'text-orange-400', icon: '💪'},
-                            dexterity: { label: 'Ловкость', color: 'text-cyan-400', icon: '🤸'},
-                            luck: { label: 'Удача', color: 'text-yellow-400', icon: '🍀'},
-                            endurance: { label: 'Выносливость', color: 'text-amber-400', icon: '🏃'},
-                            magic: { label: 'Магия', color: 'text-indigo-400', icon: '🧙'},
-                            criticalChance: { label: 'Крит', color: 'text-orange-400', icon: '💥'},
-                            antiCriticalChance: { label: 'Анти-крит', color: 'text-orange-600', icon: '🛡️💥'},
-                            dodgeChance: { label: 'Уворот', color: 'text-cyan-400', icon: '💨'},
-                            antiDodgeChance: { label: 'Анти-уворот', color: 'text-cyan-600', icon: '🎯'},
-                            vampirism: { label: 'Вампир', color: 'text-red-300', icon: '🩸'},
-                            blockChance: { label: 'Блок', color: 'text-gray-400', icon: '🛡️'},
-                            fireResistance: { label: 'Огнестойкость', color: 'text-red-500', icon: '🔥'},
-                            stealth: { label: 'Скрытность', color: 'text-purple-400', icon: '👤'},
-                          };
-                          if (!statsMap[stat]) return null;
-                          return (
-                            <span key={stat} className={statsMap[stat].color}>
-                              {statsMap[stat].icon}+{value}
-                            </span>
-                          );
-                        })}
-                        {Object.keys(item.stats).filter(stat => item.stats[stat as keyof typeof item.stats]).length > 3 && (
-                          <span className="text-gray-400">...</span>
-                        )}
-                      </div>
-                    </div>
                     
                     {/* Уровень */}
                     <div className="col-span-1 text-center">
@@ -430,12 +564,12 @@ const EnhancedShop = ({ player, onPlayerUpdate, onAddToInventory }: EnhancedShop
                     </div>
                     
                     {/* Цена */}
-                    <div className="col-span-2 text-center">
+                    <div className="col-span-1 text-center">
                       <span className="text-yellow-400 font-bold">💰 {item.price}</span>
                     </div>
                     
                     {/* Кнопка покупки */}
-                    <div className="col-span-1">
+                    <div className="col-span-1 flex items-center justify-center">
                       <Button 
                         onClick={() => buyItem(item)}
                         disabled={player.gold < item.price || (item.levelReq && player.level < item.levelReq)}
@@ -447,6 +581,143 @@ const EnhancedShop = ({ player, onPlayerUpdate, onAddToInventory }: EnhancedShop
                          'Купить'}
                       </Button>
                     </div>
+                    </div>
+                  </ItemTooltip>
+
+                    {/* Мобильная версия */}
+                    <ItemTooltip item={item} side="top">
+                      <div className="sm:hidden bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors cursor-pointer p-4 space-y-4">
+                      {/* Верхняя часть с иконкой, названием и ценой */}
+                      <div className="flex items-start gap-3">
+                        {/* Иконка */}
+                        <div className="w-12 h-12 text-2xl bg-gray-800 rounded flex items-center justify-center overflow-hidden flex-shrink-0">
+                          {item.image_url ? (
+                            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                          ) : (
+                            getItemIcon(item)
+                          )}
+                        </div>
+                        
+                        {/* Название и основная информация */}
+                        <div className="flex-1 min-w-0">
+                          <div className="font-bold text-white text-base mb-1">{item.name}</div>
+                          <div className="text-sm text-gray-300 mb-2 line-clamp-2">{item.description}</div>
+                          
+                          {/* Редкость и уровень */}
+                          <div className="flex items-center gap-2 mb-2">
+                            <Badge className={`${rarityColors[item.rarity]} text-xs`}>
+                              {rarityNames[item.rarity]}
+                            </Badge>
+                            <span className="text-yellow-400 font-bold text-sm">Ур. {item.levelReq || 1}</span>
+                          </div>
+                          
+                          {/* Цена */}
+                          <div className="text-yellow-400 font-bold text-lg mb-3">
+                            💰 {item.price}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Характеристики - компактная версия */}
+                      <div className="space-y-2">
+                        {/* Основные характеристики */}
+                        {Object.entries(item.stats).filter(([stat, value]) => 
+                          value && value !== 0 && ['attack', 'defense', 'health', 'mana'].includes(stat)
+                        ).length > 0 && (
+                          <div>
+                            <div className="text-xs font-semibold text-blue-400 mb-1">Основные характеристики:</div>
+                            <div className="flex flex-wrap gap-2">
+                              {Object.entries(item.stats).filter(([stat, value]) => 
+                                value && value !== 0 && ['attack', 'defense', 'health', 'mana'].includes(stat)
+                              ).map(([stat, value]) => {
+                                const statsMap: Record<string, {label: string, color: string, icon: string}> = {
+                                  attack: { label: 'Атака', color: 'text-red-400', icon: '⚔️'},
+                                  defense: { label: 'Защита', color: 'text-blue-400', icon: '🛡️'},
+                                  health: { label: 'Здоровье', color: 'text-green-400', icon: '❤️'},
+                                  mana: { label: 'Мана', color: 'text-purple-400', icon: '🔮'},
+                                };
+                                return (
+                                  <span key={stat} className={`text-xs ${statsMap[stat].color}`}>
+                                    {statsMap[stat].icon} {statsMap[stat].label}: +{value}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Атрибуты */}
+                        {Object.entries(item.stats).filter(([stat, value]) => 
+                          value && value !== 0 && ['strength', 'dexterity', 'luck', 'endurance', 'magic', 'intuition'].includes(stat)
+                        ).length > 0 && (
+                          <div>
+                            <div className="text-xs font-semibold text-orange-400 mb-1">Атрибуты:</div>
+                            <div className="flex flex-wrap gap-2">
+                              {Object.entries(item.stats).filter(([stat, value]) => 
+                                value && value !== 0 && ['strength', 'dexterity', 'luck', 'endurance', 'magic', 'intuition'].includes(stat)
+                              ).map(([stat, value]) => {
+                                const statsMap: Record<string, {label: string, color: string, icon: string}> = {
+                                  strength: { label: 'Сила', color: 'text-orange-400', icon: '💪'},
+                                  dexterity: { label: 'Ловкость', color: 'text-cyan-400', icon: '🤸'},
+                                  luck: { label: 'Удача', color: 'text-yellow-400', icon: '🍀'},
+                                  endurance: { label: 'Выносливость', color: 'text-amber-400', icon: '🏃'},
+                                  magic: { label: 'Магия', color: 'text-indigo-400', icon: '🧙'},
+                                  intuition: { label: 'Интуиция', color: 'text-pink-400', icon: '🔮'},
+                                };
+                                return (
+                                  <span key={stat} className={`text-xs ${statsMap[stat].color}`}>
+                                    {statsMap[stat].icon} {statsMap[stat].label}: +{value}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Модификаторы */}
+                        {Object.entries(item.stats).filter(([stat, value]) => 
+                          value && value !== 0 && ['criticalChance', 'antiCriticalChance', 'dodgeChance', 'antiDodgeChance', 'vampirism', 'blockChance'].includes(stat)
+                        ).length > 0 && (
+                          <div>
+                            <div className="text-xs font-semibold text-purple-400 mb-1">Модификаторы:</div>
+                            <div className="flex flex-wrap gap-2">
+                              {Object.entries(item.stats).filter(([stat, value]) => 
+                                value && value !== 0 && ['criticalChance', 'antiCriticalChance', 'dodgeChance', 'antiDodgeChance', 'vampirism', 'blockChance'].includes(stat)
+                              ).map(([stat, value]) => {
+                                const statsMap: Record<string, {label: string, color: string, icon: string}> = {
+                                  criticalChance: { label: 'Критический удар', color: 'text-orange-400', icon: '💥'},
+                                  antiCriticalChance: { label: 'Защита от крита', color: 'text-orange-600', icon: '🛡️💥'},
+                                  dodgeChance: { label: 'Уворот', color: 'text-cyan-400', icon: '💨'},
+                                  antiDodgeChance: { label: 'Точность', color: 'text-cyan-600', icon: '🎯'},
+                                  vampirism: { label: 'Вампиризм', color: 'text-red-300', icon: '🩸'},
+                                  blockChance: { label: 'Блок', color: 'text-gray-400', icon: '🛡️'},
+                                };
+                                return (
+                                  <span key={stat} className={`text-xs ${statsMap[stat].color}`}>
+                                    {statsMap[stat].icon} {statsMap[stat].label}: +{value}%
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Кнопка покупки */}
+                      <div className="pt-2 border-t border-gray-600">
+                        <Button 
+                          onClick={() => buyItem(item)}
+                          disabled={player.gold < item.price || (item.levelReq && player.level < item.levelReq)}
+                          size="sm"
+                          className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-sm py-2"
+                      >
+                        {player.gold < item.price ? 'Недостаточно золота' : 
+                         (item.levelReq && player.level < item.levelReq) ? 'Низкий уровень' : 
+                         'Купить'}
+                      </Button>
+                    </div>
+                      </div>
+                    </ItemTooltip>
                   </div>
                 ))}
               </div>

@@ -6,7 +6,17 @@ import { enhancedShopItems } from './enhancedShopItems';
 // Конвертируем предмет из формата базы данных во фронтенд-тип Item
 const convertDbItemToItem = (dbItem: any): Item => {
   const stats = dbItem.stats || {};
-  return {
+  
+  // Логируем предметы с названием "Величие холодной стали"
+  if (dbItem.name && dbItem.name.includes('холодной')) {
+    console.log('convertDbItemToItem: Processing "Величие холодной стали":', {
+      originalData: dbItem,
+      image_url: dbItem.image_url,
+      rarity: dbItem.rarity
+    });
+  }
+  
+  const convertedItem = {
     id: dbItem.item_id,
     name: dbItem.name,
     type: dbItem.type as ItemType,
@@ -39,6 +49,17 @@ const convertDbItemToItem = (dbItem: any): Item => {
       blockChance: stats.blockChance,
     },
   };
+  
+  // Логируем результат конвертации для "Величие холодной стали"
+  if (dbItem.name && dbItem.name.includes('холодной')) {
+    console.log('convertDbItemToItem: Converted "Величие холодной стали":', {
+      convertedItem,
+      image_url: convertedItem.image_url,
+      rarity: convertedItem.rarity
+    });
+  }
+  
+  return convertedItem;
 };
 
 export const fetchShopItems = async (): Promise<Item[]> => {
@@ -53,6 +74,13 @@ export const fetchShopItems = async (): Promise<Item[]> => {
   if (error) {
     console.error('Error fetching shop items from database:', error);
   } else if (data) {
+    console.log('fetchShopItems: Raw data from database:', data.length, 'items');
+    // Логируем предмет "Величие холодной стали" из базы данных
+    const armorItem = data.find(item => item.name && item.name.includes('холодной'));
+    if (armorItem) {
+      console.log('fetchShopItems: Found "Величие холодной стали" in database:', armorItem);
+    }
+    
     dbItems = data.map(convertDbItemToItem);
   }
 
@@ -82,6 +110,18 @@ export const fetchShopItems = async (): Promise<Item[]> => {
   console.log('Total shop items loaded:', allItems.length);
   console.log('DB items:', dbItems.length);
   console.log('Test items:', testItems.length);
+  
+  // Логируем финальный предмет "Величие холодной стали"
+  const finalArmorItem = allItems.find(item => item.name && item.name.includes('холодной'));
+  if (finalArmorItem) {
+    console.log('fetchShopItems: Final "Величие холодной стали" item:', {
+      id: finalArmorItem.id,
+      name: finalArmorItem.name,
+      rarity: finalArmorItem.rarity,
+      image_url: finalArmorItem.image_url,
+      type: finalArmorItem.type
+    });
+  }
 
   return allItems;
 };
