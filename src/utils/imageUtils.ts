@@ -1,5 +1,14 @@
 import { supabase } from '@/integrations/supabase/client';
 
+// Функция для получения базового URL Supabase
+const getSupabaseUrl = (): string => {
+  const url = import.meta.env.VITE_SUPABASE_URL;
+  if (!url) {
+    throw new Error('VITE_SUPABASE_URL is not defined');
+  }
+  return url;
+};
+
 export interface StorageImage {
   id: string;
   name: string;
@@ -41,7 +50,7 @@ export const getImagesFromStorage = async (bucketName: string): Promise<StorageI
       .map(file => ({
         id: file.id || file.name,
         name: file.name,
-        url: `https://soblxtzltnziynrvasaw.supabase.co/storage/v1/object/public/${bucketName}/${file.name}`,
+        url: `${getSupabaseUrl()}/storage/v1/object/public/${bucketName}/${file.name}`,
         created_at: file.created_at || new Date().toISOString()
       }));
 
@@ -84,7 +93,7 @@ export const getItemImages = async (): Promise<StorageImage[]> => {
  * Формирует правильный URL для изображения предмета из Supabase Storage
  */
 export const getItemImageUrl = (imageName: string, bucketName: string = 'admin-images'): string => {
-  return `https://soblxtzltnziynrvasaw.supabase.co/storage/v1/object/public/${bucketName}/${imageName}`;
+  return `${getSupabaseUrl()}/storage/v1/object/public/${bucketName}/${imageName}`;
 };
 
 /**

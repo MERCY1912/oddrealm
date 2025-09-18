@@ -1,5 +1,14 @@
 import { supabase } from '@/integrations/supabase/client';
 
+// Функция для получения базового URL Supabase
+const getSupabaseUrl = (): string => {
+  const url = import.meta.env.VITE_SUPABASE_URL;
+  if (!url) {
+    throw new Error('VITE_SUPABASE_URL is not defined');
+  }
+  return url;
+};
+
 /**
  * Удаляет неиспользуемые изображения из Supabase Storage
  */
@@ -35,7 +44,7 @@ export const cleanupUnusedImages = async () => {
 
     // Находим неиспользуемые файлы
     const unusedFiles = allFiles?.filter(file => {
-      const fileUrl = `https://soblxtzltnziynrvasaw.supabase.co/storage/v1/object/public/admin-images/${file.name}`;
+      const fileUrl = `${getSupabaseUrl()}/storage/v1/object/public/admin-images/${file.name}`;
       return !usedImageUrls.has(fileUrl);
     }) || [];
 

@@ -18,7 +18,7 @@
 5. Vercel автоматически определит настройки
 6. **ВАЖНО**: Добавьте переменные окружения:
    - `VITE_SUPABASE_URL` = `https://soblxtzltnziynrvasaw.supabase.co`
-   - `VITE_SUPABASE_ANON_KEY` = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvYmx4dHpsdG56aXlucnZhc2F3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1MTgzNzMsImV4cCI6MjA3MzA5NDM3M30.p22QcK4ky3xSWdMtffiEAiYsviBwmE1VvLE90Zy614o`
+   - `VITE_SUPABASE_PUBLISHABLE_KEY` = `ваш_публичный_ключ_из_supabase_dashboard`
 7. Нажмите "Deploy"
 
 ### Шаг 3: Проверка
