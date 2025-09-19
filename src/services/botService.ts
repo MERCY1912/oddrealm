@@ -238,18 +238,22 @@ class BotService {
         .limit(20);
 
       // Выбираем бота для ответа
+      console.log('🎯 Начинаем процесс выбора бота и сообщения...');
       const respondingBot = this.selectBotForResponse();
       if (!respondingBot) {
+        console.log('❌ Не удалось выбрать бота для ответа');
         return;
       }
 
       // Выбираем сообщение для ответа
       const messageToRespond = this.selectMessageToRespond(humanMessages);
       if (!messageToRespond) {
+        console.log('❌ Не удалось выбрать сообщение для ответа');
         return;
       }
 
       // Генерируем ответ
+      console.log('🚀 Начинаем генерацию ответа...');
       await this.generateBotResponse(respondingBot, messageToRespond, chatHistory || []);
 
     } catch (error) {
@@ -261,33 +265,54 @@ class BotService {
    * Выбирает бота для ответа
    */
   private selectBotForResponse(): BotCharacter | null {
+    console.log('🎯 Выбираем бота для ответа...');
+    console.log('🤖 Доступные боты:', this.botCharacters.map(bot => ({
+      name: bot.name,
+      status: bot.status,
+      response_chance: bot.response_chance
+    })));
+
     const availableBots = this.botCharacters.filter(bot => 
       bot.status === 'online' && Math.random() * 100 < bot.response_chance
     );
 
+    console.log(`✅ Боты готовые к ответу: ${availableBots.length}`);
+
     if (availableBots.length === 0) {
+      console.log('❌ Нет доступных ботов для ответа');
       return null;
     }
 
-    return availableBots[Math.floor(Math.random() * availableBots.length)];
+    const selectedBot = availableBots[Math.floor(Math.random() * availableBots.length)];
+    console.log(`🎲 Выбран бот: ${selectedBot.name}`);
+    return selectedBot;
   }
 
   /**
    * Выбирает сообщение для ответа
    */
   private selectMessageToRespond(messages: any[]): any | null {
+    console.log('📝 Выбираем сообщение для ответа...');
+    
     // Выбираем самое последнее сообщение от пользователя
     const latestMessage = messages[0];
+    console.log('💬 Последнее сообщение:', latestMessage);
     
     // Проверяем, что сообщение не слишком старое (не более 2 минут)
     const messageTime = new Date(latestMessage.created_at).getTime();
     const now = Date.now();
     const twoMinutesAgo = now - (2 * 60 * 1000);
     
+    console.log(`⏰ Время сообщения: ${new Date(messageTime).toLocaleTimeString()}`);
+    console.log(`⏰ Сейчас: ${new Date(now).toLocaleTimeString()}`);
+    console.log(`⏰ 2 минуты назад: ${new Date(twoMinutesAgo).toLocaleTimeString()}`);
+    
     if (messageTime < twoMinutesAgo) {
+      console.log('❌ Сообщение слишком старое, пропускаем');
       return null; // Сообщение слишком старое
     }
     
+    console.log('✅ Сообщение подходит для ответа');
     return latestMessage;
   }
 
@@ -364,6 +389,7 @@ class BotService {
         const now = new Date().toISOString();
         
         // Обновляем основную информацию бота
+        console.log(`🤖 Бот ${bot.name}: ${newStatus} в ${newLocation}`);
         const { error: botError } = await supabase
           .from('bot_characters')
           .update({
