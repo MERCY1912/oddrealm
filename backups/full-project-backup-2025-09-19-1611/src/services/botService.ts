@@ -251,18 +251,18 @@ class BotService {
         .order('created_at', { ascending: false })
         .limit(20);
 
-      // Выбираем сообщение для ответа
+      // Выбираем бота для ответа
       console.log('🎯 Начинаем процесс выбора бота и сообщения...');
-      const messageToRespond = this.selectMessageToRespond(humanMessages);
-      if (!messageToRespond) {
-        console.log('❌ Не удалось выбрать сообщение для ответа');
+      const respondingBot = this.selectBotForResponse();
+      if (!respondingBot) {
+        console.log('❌ Не удалось выбрать бота для ответа');
         return;
       }
 
-      // Выбираем бота для ответа (передаем сообщение для проверки прямых обращений)
-      const respondingBot = this.selectBotForResponse(messageToRespond);
-      if (!respondingBot) {
-        console.log('❌ Не удалось выбрать бота для ответа');
+      // Выбираем сообщение для ответа
+      const messageToRespond = this.selectMessageToRespond(humanMessages);
+      if (!messageToRespond) {
+        console.log('❌ Не удалось выбрать сообщение для ответа');
         return;
       }
 
@@ -315,7 +315,7 @@ class BotService {
   /**
    * Выбирает бота для ответа
    */
-  private selectBotForResponse(messageToRespond?: any): BotCharacter | null {
+  private selectBotForResponse(): BotCharacter | null {
     console.log('🎯 Выбираем бота для ответа...');
     console.log('🤖 Доступные боты:', this.botCharacters.map(bot => ({
       name: bot.name,
@@ -323,28 +323,6 @@ class BotService {
       response_chance: bot.response_chance
     })));
 
-    // Сначала проверим, есть ли прямое обращение к боту
-    let directMentionBot: BotCharacter | null = null;
-    if (messageToRespond && messageToRespond.message) {
-      const message = messageToRespond.message.toLowerCase();
-      directMentionBot = this.botCharacters.find(bot => {
-        const botNameLower = bot.name.toLowerCase();
-        return message.includes(botNameLower) || message.includes(bot.username.toLowerCase());
-      }) || null;
-    }
-
-    // Если есть прямое обращение, проверяем доступность этого бота
-    if (directMentionBot && directMentionBot.status !== 'offline') {
-      const lastMessageTime = this.lastBotMessageTime.get(directMentionBot.id);
-      if (!lastMessageTime || (Date.now() - lastMessageTime) >= 30000) {
-        console.log(`🎯 Прямое обращение к боту ${directMentionBot.name} - приоритетный ответ!`);
-        return directMentionBot;
-      } else {
-        console.log(`⏰ Бот ${directMentionBot.name} недавно отправлял сообщение, пропускаем прямое обращение`);
-      }
-    }
-
-    // Обычная логика выбора ботов
     const availableBots = this.botCharacters.filter(bot => {
       if (bot.status === 'offline') return false;
       if (Math.random() * 100 >= bot.response_chance) return false;

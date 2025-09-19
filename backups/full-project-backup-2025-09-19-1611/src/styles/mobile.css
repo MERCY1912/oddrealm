@@ -1,0 +1,263 @@
+/* Мобильная адаптивность для Кровавых Арен */
+
+/* Базовые стили для мобильных устройств */
+@media (max-width: 640px) {
+  /* Уменьшаем размеры шрифтов */
+  .text-4xl { font-size: 1.875rem; }
+  .text-3xl { font-size: 1.5rem; }
+  .text-2xl { font-size: 1.25rem; }
+  .text-xl { font-size: 1.125rem; }
+  .text-lg { font-size: 1rem; }
+  
+  /* Уменьшаем отступы */
+  .p-6 { padding: 1rem; }
+  .p-8 { padding: 1.5rem; }
+  .mb-16 { margin-bottom: 2rem; }
+  .mb-12 { margin-bottom: 1.5rem; }
+  .mb-8 { margin-bottom: 1rem; }
+  
+  /* Адаптивные кнопки */
+  .medieval-button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+  }
+  
+  /* Адаптивные карточки */
+  .card {
+    padding: 0.75rem;
+  }
+  
+  /* Адаптивная сетка */
+  .grid-cols-1 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+  
+  /* Скрываем декоративные элементы на мобильных */
+  .hidden-mobile {
+    display: none;
+  }
+  
+  /* Адаптивный чат */
+  .sticky-chat-panel {
+    height: 200px !important;
+  }
+  
+  /* Адаптивные кнопки управления чатом */
+  .chat-controls {
+    display: none;
+  }
+  
+  /* Адаптивная навигация */
+  .nav-buttons {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  /* Адаптивные иконки */
+  .icon-sm {
+    width: 1rem;
+    height: 1rem;
+  }
+  
+  /* Адаптивные отступы для контента */
+  .content-padding {
+    padding: 0.5rem;
+  }
+  
+  /* Адаптивные модальные окна */
+  .modal-content {
+    margin: 0.5rem;
+    max-height: calc(100vh - 1rem);
+    overflow-y: auto;
+  }
+  
+  /* Адаптивные формы */
+  .form-input {
+    font-size: 0.875rem;
+    padding: 0.5rem;
+  }
+  
+  /* Адаптивные таблицы */
+  .table-responsive {
+    overflow-x: auto;
+  }
+  
+  /* Адаптивные изображения */
+  .responsive-image {
+    width: 100%;
+    height: auto;
+  }
+  
+  /* Адаптивные заголовки */
+  .responsive-title {
+    font-size: 1.5rem;
+    line-height: 1.2;
+  }
+  
+  /* Адаптивные описания */
+  .responsive-description {
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+}
+
+/* Стили для планшетов */
+@media (min-width: 641px) and (max-width: 1024px) {
+  /* Средние размеры шрифтов */
+  .text-4xl { font-size: 2.25rem; }
+  .text-3xl { font-size: 1.875rem; }
+  .text-2xl { font-size: 1.5rem; }
+  
+  /* Средние отступы */
+  .p-6 { padding: 1.5rem; }
+  .p-8 { padding: 2rem; }
+  .mb-16 { margin-bottom: 3rem; }
+  .mb-12 { margin-bottom: 2rem; }
+  
+  /* Адаптивная сетка для планшетов */
+  .grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  
+  /* Адаптивные кнопки для планшетов */
+  .medieval-button {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Стили для больших экранов */
+@media (min-width: 1025px) {
+  /* Полные размеры */
+  .text-4xl { font-size: 2.25rem; }
+  .text-3xl { font-size: 1.875rem; }
+  .text-2xl { font-size: 1.5rem; }
+  
+  /* Полные отступы */
+  .p-6 { padding: 1.5rem; }
+  .p-8 { padding: 2rem; }
+  .mb-16 { margin-bottom: 4rem; }
+  .mb-12 { margin-bottom: 3rem; }
+  
+  /* Полная сетка */
+  .grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  
+  /* Полные кнопки */
+  .medieval-button {
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+/* Дополнительные утилиты для мобильной адаптивности */
+.mobile-hidden {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .mobile-hidden {
+    display: block;
+  }
+}
+
+.mobile-only {
+  display: block;
+}
+
+@media (min-width: 640px) {
+  .mobile-only {
+    display: none;
+  }
+}
+
+/* Адаптивные контейнеры */
+.container-responsive {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .container-responsive {
+    max-width: 640px;
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .container-responsive {
+    max-width: 768px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-responsive {
+    max-width: 1024px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container-responsive {
+    max-width: 1280px;
+  }
+}
+
+/* Адаптивные отступы */
+.spacing-responsive {
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .spacing-responsive {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .spacing-responsive {
+    padding: 2rem;
+  }
+}
+
+/* Адаптивные размеры текста */
+.text-responsive {
+  font-size: 0.875rem;
+}
+
+@media (min-width: 640px) {
+  .text-responsive {
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .text-responsive {
+    font-size: 1.125rem;
+  }
+}
+
+/* Адаптивные кнопки */
+.button-responsive {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .button-responsive {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .button-responsive {
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+  }
+}
