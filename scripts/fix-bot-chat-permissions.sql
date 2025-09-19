@@ -41,7 +41,7 @@ WITH CHECK (true);
 CREATE OR REPLACE VIEW public.all_chat_messages AS
 SELECT 
     id,
-    player_id,
+    player_id::text,
     player_name,
     message,
     created_at,
