@@ -27,16 +27,17 @@ const EnhancedChat = ({ userId, username }: EnhancedChatProps) => {
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const processedMessageIds = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     loadMessages();
     addMockMessages();
     subscribeToMessages();
     
-    // Fallback: периодическая проверка новых сообщений каждые 3 секунды
+    // Fallback: периодическая проверка новых сообщений каждые 5 секунд
     const interval = setInterval(() => {
       loadMessages();
-    }, 3000);
+    }, 5000);
 
     return () => {
       clearInterval(interval);
@@ -111,17 +112,22 @@ const EnhancedChat = ({ userId, username }: EnhancedChatProps) => {
         setMessages(prevMessages => {
           // Если это первая загрузка или нет предыдущих сообщений, устанавливаем все
           if (prevMessages.length === 0 || loading) {
+            // Инициализируем обработанные ID для всех загруженных сообщений
+            reversedData.forEach(msg => processedMessageIds.current.add(msg.id));
             return reversedData;
           }
           
           // Проверяем, есть ли новые сообщения
           const lastMessage = prevMessages[prevMessages.length - 1];
           const newMessages = reversedData.filter(msg => 
-            new Date(msg.created_at) > new Date(lastMessage.created_at)
+            new Date(msg.created_at) > new Date(lastMessage.created_at) &&
+            !processedMessageIds.current.has(msg.id)
           );
           
           if (newMessages.length > 0) {
             console.log(`🔄 Загружено ${newMessages.length} новых сообщений`);
+            // Добавляем ID сообщений в обработанные
+            newMessages.forEach(msg => processedMessageIds.current.add(msg.id));
             return [...prevMessages, ...newMessages];
           }
           
@@ -149,6 +155,13 @@ const EnhancedChat = ({ userId, username }: EnhancedChatProps) => {
         },
         (payload) => {
           console.log('💬 Получено новое сообщение от пользователя:', payload);
+          
+          // Проверяем, не обработано ли уже это сообщение
+          if (processedMessageIds.current.has(payload.new.id)) {
+            console.log('⚠️ Сообщение уже обработано, пропускаем');
+            return;
+          }
+          
           const newMessage: ChatMessage = {
             id: payload.new.id,
             player_name: payload.new.player_name,
@@ -156,6 +169,8 @@ const EnhancedChat = ({ userId, username }: EnhancedChatProps) => {
             created_at: payload.new.created_at,
             type: 'general'
           };
+          
+          processedMessageIds.current.add(payload.new.id);
           setMessages(prev => [...prev, newMessage]);
         }
       )
@@ -168,6 +183,13 @@ const EnhancedChat = ({ userId, username }: EnhancedChatProps) => {
         },
         (payload) => {
           console.log('🤖 Получено новое сообщение от бота:', payload);
+          
+          // Проверяем, не обработано ли уже это сообщение
+          if (processedMessageIds.current.has(payload.new.id)) {
+            console.log('⚠️ Сообщение бота уже обработано, пропускаем');
+            return;
+          }
+          
           // Преобразуем сообщение бота в формат ChatMessage
           const botMessage: ChatMessage = {
             id: payload.new.id,
@@ -176,6 +198,8 @@ const EnhancedChat = ({ userId, username }: EnhancedChatProps) => {
             created_at: payload.new.created_at,
             type: 'general'
           };
+          
+          processedMessageIds.current.add(payload.new.id);
           setMessages(prev => [...prev, botMessage]);
         }
       )
