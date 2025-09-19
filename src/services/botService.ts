@@ -10,6 +10,7 @@ class BotService {
   private chatCheckInterval: NodeJS.Timeout | null = null;
   private presenceUpdateInterval: NodeJS.Timeout | null = null;
   private processedMessages: Set<string> = new Set();
+  private isProcessingMessage: Set<string> = new Set();
 
   private constructor() {
     this.mistralService = MistralService.getInstance();
@@ -263,13 +264,27 @@ class BotService {
         return;
       }
 
-      // Генерируем ответ
-      console.log(`🚀 Бот ${respondingBot.name} отвечает на: "${messageToRespond.message}"`);
-      await this.generateBotResponse(respondingBot, messageToRespond, chatHistory || []);
-      
-      // Помечаем сообщение как обработанное
-      this.processedMessages.add(messageToRespond.id);
-      console.log(`✅ Сообщение помечено как обработанное. Всего обработано: ${this.processedMessages.size}`);
+      // Проверяем, не обрабатывается ли уже это сообщение
+      if (this.isProcessingMessage.has(messageToRespond.id)) {
+        console.log(`⚠️ Сообщение "${messageToRespond.message}" уже обрабатывается, пропускаем`);
+        return;
+      }
+
+      // Помечаем сообщение как обрабатываемое
+      this.isProcessingMessage.add(messageToRespond.id);
+
+      try {
+        // Генерируем ответ
+        console.log(`🚀 Бот ${respondingBot.name} отвечает на: "${messageToRespond.message}"`);
+        await this.generateBotResponse(respondingBot, messageToRespond, chatHistory || []);
+        
+        // Помечаем сообщение как обработанное
+        this.processedMessages.add(messageToRespond.id);
+        console.log(`✅ Сообщение помечено как обработанное. Всего обработано: ${this.processedMessages.size}`);
+      } finally {
+        // Убираем из обрабатываемых
+        this.isProcessingMessage.delete(messageToRespond.id);
+      }
 
     } catch (error) {
       console.error('Ошибка проверки сообщений:', error);
@@ -285,6 +300,7 @@ class BotService {
     if (this.processedMessages.size > 100) {
       console.log('🧹 Очищаем старые обработанные сообщения');
       this.processedMessages.clear();
+      this.isProcessingMessage.clear();
     }
   }
 
