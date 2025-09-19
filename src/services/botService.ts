@@ -273,7 +273,7 @@ class BotService {
     })));
 
     const availableBots = this.botCharacters.filter(bot => 
-      bot.status === 'online' && Math.random() * 100 < bot.response_chance
+      bot.status !== 'offline' && Math.random() * 100 < bot.response_chance
     );
 
     console.log(`✅ Боты готовые к ответу: ${availableBots.length}`);
@@ -284,7 +284,7 @@ class BotService {
     }
 
     const selectedBot = availableBots[Math.floor(Math.random() * availableBots.length)];
-    console.log(`🎲 Выбран бот: ${selectedBot.name}`);
+    console.log(`✅ Выбран бот: ${selectedBot.name}`);
     return selectedBot;
   }
 
