@@ -16,6 +16,12 @@ class SimpleOnlineService {
   private readonly UPDATE_INTERVAL = 30000; // 30 секунд
   private readonly AFK_THRESHOLD = 5 * 60 * 1000; // 5 минут
   private readonly OFFLINE_THRESHOLD = 10 * 60 * 1000; // 10 минут
+  
+  // Кэш для предотвращения частых запросов
+  private playersCache: OnlinePlayer[] | null = null;
+  private statsCache: any = null;
+  private lastCacheUpdate = 0;
+  private readonly CACHE_DURATION = 15000; // 15 секунд кэша
 
   public static getInstance(): SimpleOnlineService {
     if (!SimpleOnlineService.instance) {
@@ -105,22 +111,35 @@ class SimpleOnlineService {
    */
   async getOnlinePlayers(): Promise<OnlinePlayer[]> {
     try {
-      console.log('SimpleOnlineService: Получаем список игроков...');
+      const now = Date.now();
       
-      // Добавляем таймаут для предотвращения зависания
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Timeout: запрос превысил 10 секунд')), 10000);
-      });
+      // Проверяем кэш
+      if (this.playersCache && (now - this.lastCacheUpdate) < this.CACHE_DURATION) {
+        console.log('SimpleOnlineService: Используем кэшированный список игроков');
+        return this.playersCache;
+      }
+      
+      console.log('SimpleOnlineService: Получаем список игроков...');
       
       const tenMinutesAgo = new Date(Date.now() - this.OFFLINE_THRESHOLD).toISOString();
       
-      // Обертываем запрос в таймаут
-      const queryPromise = this.executeOnlinePlayersQuery(tenMinutesAgo);
-      const result = await Promise.race([queryPromise, timeoutPromise]);
+      // Выполняем запрос напрямую без таймаута
+      const result = await this.executeOnlinePlayersQuery(tenMinutesAgo);
+      
+      // Обновляем кэш
+      this.playersCache = result;
+      this.lastCacheUpdate = now;
       
       return result;
     } catch (error) {
       console.error('Ошибка получения списка игроков:', error);
+      
+      // В случае ошибки возвращаем кэшированные данные, если они есть
+      if (this.playersCache) {
+        console.log('Используем кэшированные данные после ошибки');
+        return this.playersCache;
+      }
+      
       return [];
     }
   }
@@ -130,7 +149,27 @@ class SimpleOnlineService {
    */
   private async executeOnlinePlayersQuery(tenMinutesAgo: string): Promise<OnlinePlayer[]> {
     try {
-      // Сначала получаем активность
+      // Сначала пробуем использовать быструю RPC функцию
+      console.log('Пробуем использовать RPC функцию get_online_players...');
+      const { data: rpcData, error: rpcError } = await supabase.rpc('get_online_players');
+      
+      if (!rpcError && rpcData) {
+        console.log('RPC функция работает, используем её результат');
+        const players: OnlinePlayer[] = rpcData.map((player: any) => ({
+          id: player.user_id,
+          username: player.username,
+          level: player.level,
+          character_class: player.character_class,
+          last_seen: player.last_seen,
+          status: player.status,
+          location: player.location || 'Таврос'
+        }));
+        return players;
+      }
+      
+      console.log('RPC функция не работает, используем прямой запрос:', rpcError?.message);
+      
+      // Fallback к прямому запросу
       const { data: activityData, error: activityError } = await supabase
         .from('user_activity')
         .select('user_id, last_seen, status, location')
@@ -322,6 +361,25 @@ class SimpleOnlineService {
     total: number;
   }> {
     try {
+      // Сначала пробуем использовать быструю RPC функцию
+      console.log('Получаем статистику через RPC...');
+      const { data: rpcData, error: rpcError } = await supabase.rpc('get_online_stats');
+      
+      if (!rpcError && rpcData && rpcData.length > 0) {
+        console.log('Статистика получена через RPC');
+        const stats = rpcData[0];
+        return {
+          online: stats.online_count || 0,
+          afk: stats.afk_count || 0,
+          in_battle: stats.in_battle_count || 0,
+          in_dungeon: stats.in_dungeon_count || 0,
+          total: stats.total_online || 0
+        };
+      }
+      
+      console.log('RPC функция не работает, вычисляем статистику локально:', rpcError?.message);
+      
+      // Fallback - вычисляем статистику из списка игроков
       const players = await this.getOnlinePlayers();
       
       return {
