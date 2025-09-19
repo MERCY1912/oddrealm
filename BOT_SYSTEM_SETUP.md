@@ -12,9 +12,17 @@
 
 ### 1. Выполните SQL миграцию
 
+**Вариант 1: Готовый скрипт (рекомендуется)**
 ```sql
--- В Supabase Dashboard -> SQL Editor выполните:
-scripts/create-bot-system-migration.sql
+-- Скопируйте содержимое файла:
+scripts/apply-bot-system-migration.sql
+-- И выполните в Supabase Dashboard -> SQL Editor
+```
+
+**Вариант 2: Миграция из папки**
+```sql
+-- Или используйте файл миграции:
+supabase/migrations/20250121000001_create_bot_system.sql
 ```
 
 ### 2. Настройте Mistral AI API
@@ -25,7 +33,14 @@ scripts/create-bot-system-migration.sql
 VITE_MISTRAL_API_KEY="your_api_key_here"
 ```
 
-### 3. Перезапустите приложение
+### 3. Протестируйте систему
+
+```bash
+# Проверьте, что миграция прошла успешно
+node scripts/test-bot-system.cjs
+```
+
+### 4. Перезапустите приложение
 
 ```bash
 npm run dev
