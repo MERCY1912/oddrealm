@@ -67,6 +67,9 @@ class MistralService {
       const systemPrompt = this.createSystemPrompt(botPersonality, botName);
       const messages = this.buildMessageHistory(systemPrompt, chatHistory, currentMessage);
 
+      console.log('🚀 Отправляем запрос к Mistral AI...');
+      console.log('📝 Сообщения:', messages);
+
       const response = await fetch(this.baseUrl, {
         method: 'POST',
         headers: {

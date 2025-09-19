@@ -194,6 +194,8 @@ class BotService {
    */
   private async checkForNewMessages(): Promise<void> {
     try {
+      console.log('🔍 BotService: Проверяем новые сообщения...');
+      
       // Получаем последние сообщения за последние 5 минут
       const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
       
@@ -209,7 +211,10 @@ class BotService {
         return;
       }
 
+      console.log(`📨 Найдено ${recentMessages?.length || 0} сообщений за последние 5 минут`);
+      
       if (!recentMessages || recentMessages.length === 0) {
+        console.log('📭 Нет сообщений для обработки');
         return;
       }
 
@@ -218,7 +223,10 @@ class BotService {
         !msg.is_bot_message && !this.botCharacters.some(bot => bot.username === msg.player_name)
       );
 
+      console.log(`👤 Найдено ${humanMessages.length} сообщений от пользователей`);
+      
       if (humanMessages.length === 0) {
+        console.log('🤖 Нет сообщений от пользователей для ответа');
         return;
       }
 
