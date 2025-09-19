@@ -290,7 +290,7 @@ class BotService {
         const { error } = await supabase
           .from('chat_messages')
           .insert([{
-            player_id: `bot_${bot.id}`, // Используем специальный ID для ботов
+            player_id: bot.id, // Используем ID бота напрямую
             player_name: bot.username,
             message: response,
             created_at: new Date().toISOString()

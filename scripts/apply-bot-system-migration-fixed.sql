@@ -1,5 +1,5 @@
 -- =============================================
--- ПРИМЕНЕНИЕ МИГРАЦИИ СИСТЕМЫ БОТОВ
+-- ИСПРАВЛЕННАЯ МИГРАЦИЯ СИСТЕМЫ БОТОВ
 -- =============================================
 -- 
 -- Инструкция:
@@ -11,7 +11,7 @@
 -- =============================================
 
 -- Создание системы ботов для имитации живых игроков
--- Дата: 2025-01-21
+-- Дата: 2025-01-21 (исправленная версия)
 
 -- 1. Таблица персонажей ботов
 CREATE TABLE IF NOT EXISTS public.bot_characters (
@@ -173,6 +173,7 @@ INSERT INTO public.bot_characters (
 ON CONFLICT (username) DO NOTHING;
 
 -- 10. Добавляем ботов в user_activity для отображения в онлайн списке
+-- ИСПРАВЛЕНИЕ: Используем ID бота напрямую вместо создания строки
 INSERT INTO public.user_activity (user_id, last_seen, status, location, last_activity)
 SELECT 
     bc.id as user_id,
@@ -218,6 +219,17 @@ SELECT
     location,
     'Создан' as status
 FROM public.bot_characters;
+
+-- Проверяем ботов в user_activity
+SELECT 
+    ua.user_id,
+    bc.name as bot_name,
+    ua.status,
+    ua.location,
+    'В списке онлайн' as status
+FROM public.user_activity ua
+JOIN public.bot_characters bc ON ua.user_id = bc.id
+WHERE bc.is_active = true;
 
 -- =============================================
 -- ГОТОВО! Система ботов установлена.

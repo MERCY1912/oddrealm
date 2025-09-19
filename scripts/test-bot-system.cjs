@@ -70,10 +70,25 @@ async function testBotSystem() {
     // 4. Проверяем ботов в user_activity
     console.log('\n4️⃣ Checking bots in user_activity...');
     
-    const { data: botActivity, error: activityError } = await supabase
-      .from('user_activity')
-      .select('*')
-      .like('user_id', 'bot_%');
+    // Получаем ID ботов из bot_characters
+    const { data: botIds, error: botIdsError } = await supabase
+      .from('bot_characters')
+      .select('id')
+      .eq('is_active', true);
+
+    let botActivity = [];
+    let activityError = null;
+
+    if (botIds && botIds.length > 0) {
+      const ids = botIds.map(bot => bot.id);
+      const { data, error } = await supabase
+        .from('user_activity')
+        .select('*')
+        .in('user_id', ids);
+      
+      botActivity = data;
+      activityError = error;
+    }
 
     if (activityError) {
       console.log(`❌ Error checking bot activity: ${activityError.message}`);

@@ -29,7 +29,7 @@ const OnlinePlayersListWithBots = () => {
   // Объединяем реальных игроков и ботов
   const allPlayers = React.useMemo(() => {
     const botPlayers: OnlinePlayer[] = bots.map(bot => ({
-      id: `bot_${bot.id}`,
+      id: bot.id, // Используем ID бота напрямую
       username: bot.username,
       level: bot.level,
       character_class: bot.character_class,

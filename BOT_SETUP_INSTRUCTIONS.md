@@ -13,7 +13,7 @@
    - Нажмите "New query"
 
 3. **Скопируйте и выполните SQL код**
-   - Откройте файл: `scripts/apply-bot-system-migration.sql`
+   - Откройте файл: `scripts/apply-bot-system-migration-fixed.sql`
    - Скопируйте **весь** содержимый файла
    - Вставьте в SQL Editor
    - Нажмите "Run" (или Ctrl+Enter)
