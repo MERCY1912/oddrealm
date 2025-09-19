@@ -7,6 +7,7 @@ import { formatPlayerName } from '@/utils/playerUtils';
 import { useToast } from '@/hooks/use-toast';
 import { useRegeneration } from '@/hooks/useRegeneration';
 import { useFastUserPresence } from '@/hooks/useFastUserPresence';
+import { useBotSystem } from '@/hooks/useBotSystem';
 
 import LevelUpDistributionDialog from './LevelUpDistributionDialog';
 import GameInterface from './GameInterface';
@@ -42,6 +43,9 @@ const GameMain = ({ initialPlayer, initialEquipment, onLogout }: GameMainProps) 
   
   // Инициализируем отслеживание присутствия пользователя
   const { setStatus } = useFastUserPresence({ autoStart: true });
+  
+  // Инициализируем систему ботов
+  const { isInitialized: botsInitialized, isRunning: botsRunning } = useBotSystem();
   
   const [activeTab, setActiveTab] = useState('character');
   const [isInBattle, setInBattle] = useState(false);

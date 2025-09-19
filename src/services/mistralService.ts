@@ -1,0 +1,175 @@
+interface MistralMessage {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+}
+
+interface MistralResponse {
+  choices: Array<{
+    message: {
+      content: string;
+    };
+  }>;
+}
+
+class MistralService {
+  private static instance: MistralService;
+  private apiKey: string;
+  private baseUrl = 'https://api.mistral.ai/v1/chat/completions';
+  private model = 'mistral-medium-latest';
+
+  private constructor() {
+    this.apiKey = import.meta.env.VITE_MISTRAL_API_KEY || '';
+    if (!this.apiKey) {
+      console.warn('Mistral API key not found. Bot responses will be disabled.');
+    }
+  }
+
+  public static getInstance(): MistralService {
+    if (!MistralService.instance) {
+      MistralService.instance = new MistralService();
+    }
+    return MistralService.instance;
+  }
+
+  /**
+   * Генерирует ответ бота на основе контекста чата и личности бота
+   */
+  async generateBotResponse(
+    botPersonality: string,
+    chatHistory: Array<{ username: string; message: string; timestamp: string }>,
+    currentMessage: string,
+    botName: string
+  ): Promise<string> {
+    if (!this.apiKey) {
+      return this.getFallbackResponse(botPersonality);
+    }
+
+    try {
+      const systemPrompt = this.createSystemPrompt(botPersonality, botName);
+      const messages = this.buildMessageHistory(systemPrompt, chatHistory, currentMessage);
+
+      const response = await fetch(this.baseUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: this.model,
+          messages,
+          max_tokens: 150,
+          temperature: 0.8,
+          top_p: 0.9,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Mistral API error: ${response.status}`);
+      }
+
+      const data: MistralResponse = await response.json();
+      const botResponse = data.choices[0]?.message?.content?.trim();
+
+      if (!botResponse) {
+        return this.getFallbackResponse(botPersonality);
+      }
+
+      // Ограничиваем длину ответа
+      return botResponse.length > 200 ? botResponse.substring(0, 200) + '...' : botResponse;
+
+    } catch (error) {
+      console.error('Error generating bot response:', error);
+      return this.getFallbackResponse(botPersonality);
+    }
+  }
+
+  /**
+   * Создает системный промпт для бота
+   */
+  private createSystemPrompt(personality: string, botName: string): string {
+    return `Ты ${botName}, игрок в онлайн-игре "Realm of Champions". 
+
+Твоя личность: ${personality}
+
+Правила общения:
+- Отвечай как игрок, а не как AI
+- Используй игровую терминологию (уровни, классы, подземелья, арена)
+- Будь дружелюбным и помогай другим игрокам
+- Не упоминай, что ты AI или бот
+- Отвечай кратко (максимум 2-3 предложения)
+- Используй эмодзи в меру
+- Отвечай на русском языке
+
+Примеры ответов:
+- "Привет! Как дела в игре?"
+- "Я сейчас прохожу подземелье, очень сложно!"
+- "Можешь помочь с выбором оружия?"
+- "Увидимся на арене! 💪"`;
+  }
+
+  /**
+   * Строит историю сообщений для контекста
+   */
+  private buildMessageHistory(
+    systemPrompt: string,
+    chatHistory: Array<{ username: string; message: string; timestamp: string }>,
+    currentMessage: string
+  ): MistralMessage[] {
+    const messages: MistralMessage[] = [
+      { role: 'system', content: systemPrompt }
+    ];
+
+    // Добавляем последние 5 сообщений для контекста
+    const recentHistory = chatHistory.slice(-5);
+    for (const msg of recentHistory) {
+      messages.push({
+        role: msg.username.includes('Bot') ? 'assistant' : 'user',
+        content: `${msg.username}: ${msg.message}`
+      });
+    }
+
+    // Добавляем текущее сообщение
+    messages.push({
+      role: 'user',
+      content: currentMessage
+    });
+
+    return messages;
+  }
+
+  /**
+   * Возвращает запасной ответ, если API недоступен
+   */
+  private getFallbackResponse(personality: string): string {
+    const fallbackResponses = [
+      "Интересно! Расскажи больше",
+      "Понял, спасибо за информацию",
+      "Да, согласен с тобой",
+      "Хм, не думал об этом",
+      "Хорошая идея!",
+      "Попробуем разобраться вместе",
+      "У меня тоже так было",
+      "Классно! Продолжай"
+    ];
+
+    // Выбираем ответ на основе личности
+    if (personality.includes('воин') || personality.includes('агрессивн')) {
+      return "💪 Давай разберемся с этим!";
+    } else if (personality.includes('маг') || personality.includes('мудр')) {
+      return "🔮 Интересная мысль...";
+    } else if (personality.includes('лучник') || personality.includes('осторожн')) {
+      return "🏹 Нужно быть осторожнее";
+    }
+
+    return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
+  }
+
+  /**
+   * Проверяет, доступен ли API
+   */
+  isAvailable(): boolean {
+    return !!this.apiKey;
+  }
+}
+
+export default MistralService;
