@@ -134,6 +134,9 @@ class MistralService {
     chatHistory: Array<{ username: string; message: string; timestamp: string }>,
     currentMessage: string
   ): MistralMessage[] {
+    console.log(`📚 История чата: ${chatHistory.length} сообщений`);
+    console.log('📝 Первое сообщение:', chatHistory[0]);
+    
     const messages: MistralMessage[] = [
       { role: 'system', content: systemPrompt }
     ];
@@ -141,10 +144,16 @@ class MistralService {
     // Добавляем последние 5 сообщений для контекста
     const recentHistory = chatHistory.slice(-5);
     for (const msg of recentHistory) {
-      messages.push({
-        role: msg.username.includes('Bot') ? 'assistant' : 'user',
-        content: `${msg.username}: ${msg.message}`
-      });
+      // Проверяем разные варианты полей (username/player_name)
+      const username = msg.username || msg.player_name;
+      const message = msg.message;
+      
+      if (msg && username && message) {
+        messages.push({
+          role: username.includes('_bot') || username.includes('Bot') ? 'assistant' : 'user',
+          content: `${username}: ${message}`
+        });
+      }
     }
 
     // Добавляем текущее сообщение
