@@ -20,12 +20,12 @@ export const useOnlinePlayers = (autoRefresh: boolean = true): UseOnlinePlayersR
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState({ online: 0, afk: 0, in_battle: 0, in_dungeon: 0, total: 0 });
 
-  const onlineService = SimpleOnlineService.getInstance();
-
   const loadPlayers = useCallback(async () => {
     try {
       setError(null);
       console.log('Загружаем список игроков...');
+      
+      const onlineService = SimpleOnlineService.getInstance();
       const players = await onlineService.getOnlinePlayers();
       console.log('Получены игроки:', players);
       setOnlinePlayers(players);
@@ -41,7 +41,7 @@ export const useOnlinePlayers = (autoRefresh: boolean = true): UseOnlinePlayersR
     } finally {
       setLoading(false);
     }
-  }, [onlineService]);
+  }, []); // Убираем зависимость от onlineService
 
   const refreshPlayers = useCallback(async () => {
     setLoading(true);
@@ -51,12 +51,16 @@ export const useOnlinePlayers = (autoRefresh: boolean = true): UseOnlinePlayersR
   useEffect(() => {
     // Загружаем игроков при монтировании
     loadPlayers();
+  }, []); // Загружаем только при монтировании
 
+  useEffect(() => {
     let interval: NodeJS.Timeout | undefined;
 
     if (autoRefresh) {
       // Обновляем каждые 30 секунд
-      interval = setInterval(loadPlayers, 30000);
+      interval = setInterval(() => {
+        loadPlayers();
+      }, 30000);
     }
 
     return () => {
@@ -64,7 +68,7 @@ export const useOnlinePlayers = (autoRefresh: boolean = true): UseOnlinePlayersR
         clearInterval(interval);
       }
     };
-  }, [loadPlayers, autoRefresh]);
+  }, [autoRefresh]); // Только autoRefresh влияет на интервал
 
   return {
     onlinePlayers,

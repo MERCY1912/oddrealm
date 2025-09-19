@@ -107,8 +107,29 @@ class SimpleOnlineService {
     try {
       console.log('SimpleOnlineService: Получаем список игроков...');
       
+      // Добавляем таймаут для предотвращения зависания
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Timeout: запрос превысил 10 секунд')), 10000);
+      });
+      
       const tenMinutesAgo = new Date(Date.now() - this.OFFLINE_THRESHOLD).toISOString();
       
+      // Обертываем запрос в таймаут
+      const queryPromise = this.executeOnlinePlayersQuery(tenMinutesAgo);
+      const result = await Promise.race([queryPromise, timeoutPromise]);
+      
+      return result;
+    } catch (error) {
+      console.error('Ошибка получения списка игроков:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Выполняет запрос для получения онлайн игроков
+   */
+  private async executeOnlinePlayersQuery(tenMinutesAgo: string): Promise<OnlinePlayer[]> {
+    try {
       // Сначала получаем активность
       const { data: activityData, error: activityError } = await supabase
         .from('user_activity')
@@ -285,7 +306,7 @@ class SimpleOnlineService {
       console.log('Обработанные игроки:', sortedPlayers);
       return sortedPlayers;
     } catch (error) {
-      console.error('Ошибка получения списка игроков:', error);
+      console.error('Ошибка выполнения запроса онлайн игроков:', error);
       return [];
     }
   }
