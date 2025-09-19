@@ -11,6 +11,7 @@ class BotService {
   private presenceUpdateInterval: NodeJS.Timeout | null = null;
   private processedMessages: Set<string> = new Set();
   private isProcessingMessage: Set<string> = new Set();
+  private lastBotMessageTime: Map<string, number> = new Map(); // bot_id -> timestamp
   private instanceId: string = Math.random().toString(36).substr(2, 9);
 
   private constructor() {
@@ -322,9 +323,22 @@ class BotService {
       response_chance: bot.response_chance
     })));
 
-    const availableBots = this.botCharacters.filter(bot => 
-      bot.status !== 'offline' && Math.random() * 100 < bot.response_chance
-    );
+    const availableBots = this.botCharacters.filter(bot => {
+      if (bot.status === 'offline') return false;
+      if (Math.random() * 100 >= bot.response_chance) return false;
+      
+      // Проверяем, не отправлял ли бот сообщение в последние 30 секунд
+      const lastMessageTime = this.lastBotMessageTime.get(bot.id);
+      if (lastMessageTime) {
+        const timeSinceLastMessage = Date.now() - lastMessageTime;
+        if (timeSinceLastMessage < 30000) { // 30 секунд
+          console.log(`⏰ Бот ${bot.name} недавно отправлял сообщение (${Math.round(timeSinceLastMessage/1000)}с назад), пропускаем`);
+          return false;
+        }
+      }
+      
+      return true;
+    });
 
     console.log(`✅ Боты готовые к ответу: ${availableBots.length}`);
 
@@ -388,23 +402,31 @@ class BotService {
       console.log(`📝 Сгенерированный ответ: "${response}"`);
 
       if (response) {
+        // Ограничиваем длину ответа (максимум 500 символов)
+        const truncatedResponse = response.length > 500 
+          ? response.substring(0, 500) + '...'
+          : response;
+
         // Отправляем сообщение от имени бота в специальную таблицу
         const { error } = await supabase
           .from('bot_chat_messages')
           .insert([{
             bot_id: bot.id,
             player_name: bot.username,
-            message: response,
+            message: truncatedResponse,
             created_at: new Date().toISOString()
           }]);
 
         if (error) {
           console.error('Ошибка отправки сообщения бота:', error);
         } else {
-          console.log(`✅ BotService [${this.instanceId}] - Бот ${bot.name} отправил ответ: "${response}"`);
+          console.log(`✅ BotService [${this.instanceId}] - Бот ${bot.name} отправил ответ: "${truncatedResponse}"`);
+          
+          // Записываем время последнего сообщения бота
+          this.lastBotMessageTime.set(bot.id, Date.now());
           
           // Обновляем активность бота
-          await this.updateBotActivity(bot.id, 'chat', `Ответил: "${response.substring(0, 50)}..."`);
+          await this.updateBotActivity(bot.id, 'chat', `Ответил: "${truncatedResponse.substring(0, 50)}..."`);
         }
       }
     } catch (error) {
