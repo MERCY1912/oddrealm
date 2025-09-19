@@ -24,7 +24,6 @@ const Chat = ({ userId, username }: ChatProps) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
-  const [autoScroll, setAutoScroll] = useState(true);
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -37,17 +36,10 @@ const Chat = ({ userId, username }: ChatProps) => {
 
   // Автоскролл к последним сообщениям
   useEffect(() => {
-    if (autoScroll && messagesEndRef.current) {
+    if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, autoScroll]);
-
-  // Обработка скролла для определения, нужно ли автоскроллить
-  const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
-    const { scrollTop, scrollHeight, clientHeight } = event.currentTarget;
-    const isNearBottom = scrollHeight - scrollTop - clientHeight < 50;
-    setAutoScroll(isNearBottom);
-  };
+  }, [messages]);
 
   const addMockMessages = () => {
     // Добавляем тестовые сообщения для демонстрации
@@ -135,8 +127,6 @@ const Chat = ({ userId, username }: ChatProps) => {
             created_at: payload.new.created_at
           };
           setMessages(prev => [...prev, newMessage]);
-          // Включаем автоскролл при получении нового сообщения
-          setAutoScroll(true);
         }
       )
       .on(
@@ -156,8 +146,6 @@ const Chat = ({ userId, username }: ChatProps) => {
             created_at: payload.new.created_at
           };
           setMessages(prev => [...prev, botMessage]);
-          // Включаем автоскролл при получении нового сообщения от бота
-          setAutoScroll(true);
         }
       )
       .subscribe();
@@ -200,8 +188,6 @@ const Chat = ({ userId, username }: ChatProps) => {
       setMessages(prev => [...prev, newMsg]);
     }
 
-    // Включаем автоскролл после отправки сообщения
-    setAutoScroll(true);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -223,7 +209,6 @@ const Chat = ({ userId, username }: ChatProps) => {
       <ScrollArea 
         className={`flex-1 min-h-0 game-scrollbar ${isMobile ? 'px-1 py-0.5' : 'p-2'}`}
         ref={scrollAreaRef}
-        onScrollCapture={handleScroll}
       >
         <div className={`${isMobile ? 'space-y-0.5' : 'space-y-2'}`}>
           {loading ? (

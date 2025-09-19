@@ -24,7 +24,6 @@ const EnhancedChat = ({ userId, username }: EnhancedChatProps) => {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('general');
-  const [autoScroll, setAutoScroll] = useState(true);
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -37,17 +36,10 @@ const EnhancedChat = ({ userId, username }: EnhancedChatProps) => {
 
   // Автоскролл к последним сообщениям
   useEffect(() => {
-    if (autoScroll && messagesEndRef.current) {
+    if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, autoScroll]);
-
-  // Обработка скролла для определения, нужно ли автоскроллить
-  const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
-    const { scrollTop, scrollHeight, clientHeight } = event.currentTarget;
-    const isNearBottom = scrollHeight - scrollTop - clientHeight < 50;
-    setAutoScroll(isNearBottom);
-  };
+  }, [messages]);
 
   const addMockMessages = () => {
     // Добавляем тестовые сообщения для демонстрации
@@ -135,8 +127,6 @@ const EnhancedChat = ({ userId, username }: EnhancedChatProps) => {
             type: 'general'
           };
           setMessages(prev => [...prev, newMessage]);
-          // Включаем автоскролл при получении нового сообщения
-          setAutoScroll(true);
         }
       )
       .on(
@@ -157,8 +147,6 @@ const EnhancedChat = ({ userId, username }: EnhancedChatProps) => {
             type: 'general'
           };
           setMessages(prev => [...prev, botMessage]);
-          // Включаем автоскролл при получении нового сообщения от бота
-          setAutoScroll(true);
         }
       )
       .subscribe();
@@ -202,8 +190,6 @@ const EnhancedChat = ({ userId, username }: EnhancedChatProps) => {
       setMessages(prev => [...prev, newMsg]);
     }
 
-    // Включаем автоскролл после отправки сообщения
-    setAutoScroll(true);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -274,7 +260,6 @@ const EnhancedChat = ({ userId, username }: EnhancedChatProps) => {
       <ScrollArea 
         className="flex-1 p-1 min-h-0"
         ref={scrollAreaRef}
-        onScrollCapture={handleScroll}
       >
         <div className="space-y-1">
           {loading ? (
