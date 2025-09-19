@@ -18,9 +18,16 @@ class MistralService {
   private model = 'mistral-medium-latest';
 
   private constructor() {
-    this.apiKey = import.meta.env.VITE_MISTRAL_API_KEY || '';
+    // Пробуем разные способы получения API ключа
+    this.apiKey = import.meta.env.VITE_MISTRAL_API_KEY || 
+                  (typeof window !== 'undefined' && (window as any).VITE_MISTRAL_API_KEY) || 
+                  '';
+    
     if (!this.apiKey) {
       console.warn('Mistral API key not found. Bot responses will be disabled.');
+      console.log('Available env vars:', Object.keys(import.meta.env));
+    } else {
+      console.log('✅ Mistral API key loaded successfully');
     }
   }
 
@@ -29,6 +36,14 @@ class MistralService {
       MistralService.instance = new MistralService();
     }
     return MistralService.instance;
+  }
+
+  /**
+   * Устанавливает API ключ вручную (для отладки)
+   */
+  public setApiKey(apiKey: string): void {
+    this.apiKey = apiKey;
+    console.log('✅ Mistral API key set manually');
   }
 
   /**

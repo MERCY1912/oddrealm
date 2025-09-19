@@ -12,6 +12,12 @@ class BotService {
 
   private constructor() {
     this.mistralService = MistralService.getInstance();
+    
+    // Пытаемся установить API ключ из переменных окружения
+    const apiKey = import.meta.env.VITE_MISTRAL_API_KEY;
+    if (apiKey) {
+      this.mistralService.setApiKey(apiKey);
+    }
   }
 
   public static getInstance(): BotService {
@@ -262,9 +268,19 @@ class BotService {
    * Выбирает сообщение для ответа
    */
   private selectMessageToRespond(messages: any[]): any | null {
-    // Выбираем случайное сообщение из последних
-    const recentMessages = messages.slice(0, 3);
-    return recentMessages[Math.floor(Math.random() * recentMessages.length)];
+    // Выбираем самое последнее сообщение от пользователя
+    const latestMessage = messages[0];
+    
+    // Проверяем, что сообщение не слишком старое (не более 2 минут)
+    const messageTime = new Date(latestMessage.created_at).getTime();
+    const now = Date.now();
+    const twoMinutesAgo = now - (2 * 60 * 1000);
+    
+    if (messageTime < twoMinutesAgo) {
+      return null; // Сообщение слишком старое
+    }
+    
+    return latestMessage;
   }
 
   /**

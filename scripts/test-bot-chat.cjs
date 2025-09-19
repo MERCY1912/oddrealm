@@ -1,15 +1,15 @@
 const { createClient } = require('@supabase/supabase-js');
-require('dotenv').config({ path: '.env.local' });
+require('dotenv').config({ path: './env.local' });
 
 // Настройка Supabase
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
+const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
   console.error('❌ Не найдены переменные окружения Supabase');
   console.log('Убедитесь, что файл .env.local содержит:');
   console.log('VITE_SUPABASE_URL=...');
-  console.log('VITE_SUPABASE_ANON_KEY=...');
+  console.log('SUPABASE_SERVICE_KEY=...');
   process.exit(1);
 }
 

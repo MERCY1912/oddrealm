@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест Mistral AI в браузере</title>
+</head>
+<body>
+    <h1>Тест Mistral AI</h1>
+    <div id="status">Загрузка...</div>
+    <button onclick="testMistral()">Тест Mistral AI</button>
+    <div id="result"></div>
+
+    <script type="module">
+        const API_KEY = 'cZGg3pBnGpBY6hA3m7cXcJ947eIy9KXC'; // Ваш API ключ
+        
+        window.testMistral = async function() {
+            const statusDiv = document.getElementById('status');
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                statusDiv.textContent = 'Отправляем запрос к Mistral AI...';
+                
+                const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`,
+                    },
+                    body: JSON.stringify({
+                        model: 'mistral-medium-latest',
+                        messages: [
+                            {
+                                role: 'system',
+                                content: 'Ты игрок в онлайн-игре "Realm of Champions". Отвечай кратко и дружелюбно на русском языке как персонаж Луна - ловкий лучник.'
+                            },
+                            {
+                                role: 'user',
+                                content: 'Привет! Как дела?'
+                            }
+                        ],
+                        max_tokens: 100,
+                        temperature: 0.8,
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+                }
+
+                const data = await response.json();
+                const botResponse = data.choices[0]?.message?.content?.trim();
+                
+                if (botResponse) {
+                    statusDiv.textContent = '✅ Mistral AI работает!';
+                    resultDiv.innerHTML = `<p><strong>Ответ бота:</strong> "${botResponse}"</p>`;
+                } else {
+                    throw new Error('Пустой ответ от API');
+                }
+
+            } catch (error) {
+                statusDiv.textContent = '❌ Ошибка: ' + error.message;
+                resultDiv.innerHTML = `<p style="color: red;">${error.message}</p>`;
+            }
+        };
+
+        // Автоматический тест при загрузке
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('status').textContent = 'Готов к тесту. Нажмите кнопку.';
+        });
+    </script>
+</body>
+</html>
