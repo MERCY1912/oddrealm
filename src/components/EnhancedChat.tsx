@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -24,13 +24,30 @@ const EnhancedChat = ({ userId, username }: EnhancedChatProps) => {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('general');
+  const [autoScroll, setAutoScroll] = useState(true);
   const { toast } = useToast();
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     loadMessages();
     addMockMessages();
     subscribeToMessages();
   }, []);
+
+  // Автоскролл к последним сообщениям
+  useEffect(() => {
+    if (autoScroll && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, autoScroll]);
+
+  // Обработка скролла для определения, нужно ли автоскроллить
+  const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = event.currentTarget;
+    const isNearBottom = scrollHeight - scrollTop - clientHeight < 50;
+    setAutoScroll(isNearBottom);
+  };
 
   const addMockMessages = () => {
     // Добавляем тестовые сообщения для демонстрации
@@ -97,6 +114,8 @@ const EnhancedChat = ({ userId, username }: EnhancedChatProps) => {
   };
 
   const subscribeToMessages = () => {
+    console.log('📡 Подписываемся на real-time обновления чата...');
+    
     const channel = supabase
       .channel('chat_messages')
       .on(
@@ -107,8 +126,17 @@ const EnhancedChat = ({ userId, username }: EnhancedChatProps) => {
           table: 'chat_messages',
         },
         (payload) => {
-          console.log('Получено новое сообщение от пользователя:', payload);
-          setMessages(prev => [payload.new as ChatMessage, ...prev]);
+          console.log('💬 Получено новое сообщение от пользователя:', payload);
+          const newMessage: ChatMessage = {
+            id: payload.new.id,
+            player_name: payload.new.player_name,
+            message: payload.new.message,
+            created_at: payload.new.created_at,
+            type: 'general'
+          };
+          setMessages(prev => [...prev, newMessage]);
+          // Включаем автоскролл при получении нового сообщения
+          setAutoScroll(true);
         }
       )
       .on(
@@ -119,7 +147,7 @@ const EnhancedChat = ({ userId, username }: EnhancedChatProps) => {
           table: 'bot_chat_messages',
         },
         (payload) => {
-          console.log('Получено новое сообщение от бота:', payload);
+          console.log('🤖 Получено новое сообщение от бота:', payload);
           // Преобразуем сообщение бота в формат ChatMessage
           const botMessage: ChatMessage = {
             id: payload.new.id,
@@ -128,12 +156,15 @@ const EnhancedChat = ({ userId, username }: EnhancedChatProps) => {
             created_at: payload.new.created_at,
             type: 'general'
           };
-          setMessages(prev => [botMessage, ...prev]);
+          setMessages(prev => [...prev, botMessage]);
+          // Включаем автоскролл при получении нового сообщения от бота
+          setAutoScroll(true);
         }
       )
       .subscribe();
 
     return () => {
+      console.log('📡 Отписываемся от real-time обновлений чата');
       supabase.removeChannel(channel);
     };
   };
@@ -141,16 +172,7 @@ const EnhancedChat = ({ userId, username }: EnhancedChatProps) => {
   const sendMessage = async () => {
     if (!newMessage.trim()) return;
 
-    // Добавляем сообщение локально для демонстрации
-    const newMsg: ChatMessage = {
-      id: `local-${Date.now()}`,
-      player_name: username,
-      message: newMessage,
-      created_at: new Date().toISOString(),
-      type: activeTab as 'general' | 'system' | 'trade'
-    };
-    
-    setMessages(prev => [...prev, newMsg]);
+    const messageText = newMessage.trim();
     setNewMessage('');
 
     // Пытаемся отправить в базу данных
@@ -160,13 +182,28 @@ const EnhancedChat = ({ userId, username }: EnhancedChatProps) => {
         .insert({
           player_id: userId,
           player_name: username,
-          message: newMessage,
+          message: messageText,
         });
 
       if (error) throw error;
+      console.log('✅ Сообщение отправлено в базу данных');
     } catch (error: any) {
-      console.log('Сообщение отправлено в демо-режиме');
+      console.log('⚠️ Сообщение отправлено в демо-режиме:', error);
+      
+      // Добавляем сообщение локально для демонстрации
+      const newMsg: ChatMessage = {
+        id: `local-${Date.now()}`,
+        player_name: username,
+        message: messageText,
+        created_at: new Date().toISOString(),
+        type: activeTab as 'general' | 'system' | 'trade'
+      };
+      
+      setMessages(prev => [...prev, newMsg]);
     }
+
+    // Включаем автоскролл после отправки сообщения
+    setAutoScroll(true);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -234,7 +271,11 @@ const EnhancedChat = ({ userId, username }: EnhancedChatProps) => {
       </div>
       
       {/* Область сообщений */}
-      <ScrollArea className="flex-1 p-1 min-h-0">
+      <ScrollArea 
+        className="flex-1 p-1 min-h-0"
+        ref={scrollAreaRef}
+        onScrollCapture={handleScroll}
+      >
         <div className="space-y-1">
           {loading ? (
             <div className="text-gray-500 text-sm text-center">
@@ -255,6 +296,8 @@ const EnhancedChat = ({ userId, username }: EnhancedChatProps) => {
               </div>
             ))
           )}
+          {/* Невидимый элемент для автоскролла */}
+          <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
       
