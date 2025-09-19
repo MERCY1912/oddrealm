@@ -60,7 +60,7 @@ async function testRPCPerformance() {
     const startTime3 = Date.now();
     
     const { error: updateError } = await supabase.rpc('update_user_presence', {
-      p_status: 'online',
+      p_status: 'online', // Теперь это player_status enum
       p_location: 'Таврос'
     });
     

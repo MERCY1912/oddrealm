@@ -44,7 +44,7 @@ class FastOnlineService {
       console.log(`FastOnlineService: Обновляем присутствие ${status} в ${location}`);
       
       const { error } = await supabase.rpc('update_user_presence', {
-        p_status: status,
+        p_status: status as any, // Приводим к типу player_status
         p_location: location
       });
       

@@ -11,16 +11,19 @@
 Выполните SQL скрипт в Supabase Dashboard -> SQL Editor:
 
 ```bash
-# Запустите скрипт создания RPC функций
-node scripts/create-all-rpc-functions.sql
+# Используйте исправленный скрипт
+scripts/create-all-rpc-functions-fixed.sql
 ```
 
-Или скопируйте содержимое файла `scripts/create-all-rpc-functions.sql` в SQL Editor.
+**Важно:** Скопируйте содержимое файла `scripts/create-all-rpc-functions-fixed.sql` в SQL Editor, а не запускайте через node, так как это SQL файл.
 
 ### 2. Тестирование RPC функций
 
 ```bash
-# Проверьте производительность новых RPC функций
+# Сначала проверьте, что функции работают
+node scripts/test-rpc-functions.cjs
+
+# Затем проверьте производительность
 node scripts/test-rpc-performance.cjs
 ```
 
