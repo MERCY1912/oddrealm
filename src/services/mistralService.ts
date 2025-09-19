@@ -21,7 +21,7 @@ class MistralService {
     // Пробуем разные способы получения API ключа
     this.apiKey = import.meta.env.VITE_MISTRAL_API_KEY || 
                   (typeof window !== 'undefined' && (window as any).VITE_MISTRAL_API_KEY) || 
-                  '';
+                  'cZGg3pBnGpBY6hA3m7cXcJ947eIy9KXC'; // Fallback для тестирования
     
     if (!this.apiKey) {
       console.warn('Mistral API key not found. Bot responses will be disabled.');
@@ -55,7 +55,11 @@ class MistralService {
     currentMessage: string,
     botName: string
   ): Promise<string> {
+    console.log(`🧠 MistralService: Генерируем ответ для ${botName}`);
+    console.log(`🔑 API ключ: ${this.apiKey ? 'найден' : 'НЕ НАЙДЕН'}`);
+    
     if (!this.apiKey) {
+      console.log('⚠️ Используем запасной ответ');
       return this.getFallbackResponse(botPersonality);
     }
 

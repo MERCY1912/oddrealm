@@ -292,7 +292,8 @@ class BotService {
     chatHistory: any[]
   ): Promise<void> {
     try {
-      console.log(`Бот ${bot.name} отвечает на сообщение: "${messageToRespond.message}"`);
+      console.log(`🤖 Бот ${bot.name} отвечает на сообщение: "${messageToRespond.message}"`);
+      console.log(`🔑 Mistral API доступен: ${this.mistralService.isAvailable()}`);
       
       const response = await this.mistralService.generateBotResponse(
         bot.personality,
@@ -300,6 +301,8 @@ class BotService {
         messageToRespond.message,
         bot.name
       );
+      
+      console.log(`📝 Сгенерированный ответ: "${response}"`);
 
       if (response) {
         // Отправляем сообщение от имени бота в специальную таблицу
