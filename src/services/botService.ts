@@ -9,6 +9,7 @@ class BotService {
   private isRunning = false;
   private chatCheckInterval: NodeJS.Timeout | null = null;
   private presenceUpdateInterval: NodeJS.Timeout | null = null;
+  private processedMessages: Set<string> = new Set();
 
   private constructor() {
     this.mistralService = MistralService.getInstance();
@@ -196,6 +197,10 @@ class BotService {
     try {
       console.log('🔍 BotService: Проверяем новые сообщения...');
       
+      // Очищаем старые обработанные сообщения (старше 10 минут)
+      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+      this.cleanOldProcessedMessages(tenMinutesAgo);
+      
       // Получаем последние сообщения за последние 5 минут
       const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
       
@@ -252,12 +257,34 @@ class BotService {
         return;
       }
 
+      // Проверяем, не отвечали ли уже боты на это сообщение
+      if (this.processedMessages.has(messageToRespond.id)) {
+        console.log(`⚠️ На сообщение "${messageToRespond.message}" уже отвечали боты, пропускаем`);
+        return;
+      }
+
       // Генерируем ответ
-      console.log('🚀 Начинаем генерацию ответа...');
+      console.log(`🚀 Бот ${respondingBot.name} отвечает на: "${messageToRespond.message}"`);
       await this.generateBotResponse(respondingBot, messageToRespond, chatHistory || []);
+      
+      // Помечаем сообщение как обработанное
+      this.processedMessages.add(messageToRespond.id);
+      console.log(`✅ Сообщение помечено как обработанное. Всего обработано: ${this.processedMessages.size}`);
 
     } catch (error) {
       console.error('Ошибка проверки сообщений:', error);
+    }
+  }
+
+  /**
+   * Очищает старые обработанные сообщения
+   */
+  private cleanOldProcessedMessages(cutoffTime: string): void {
+    // В реальном приложении здесь можно было бы очистить по времени создания сообщений
+    // Но поскольку у нас нет доступа к времени создания по ID, просто ограничиваем размер Set
+    if (this.processedMessages.size > 100) {
+      console.log('🧹 Очищаем старые обработанные сообщения');
+      this.processedMessages.clear();
     }
   }
 
