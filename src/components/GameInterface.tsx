@@ -44,6 +44,8 @@ interface GameInterfaceProps {
 const GameInterface = ({ player, onPlayerUpdate, onLogout, onOpenSettings, onOpenAdminPanel, onOpenAdminPanelV2, onAddToInventory, onEquipItem, onRemoveFromInventory, onUnequipItem, inventory = [], equipment = {} }: GameInterfaceProps) => {
   const isMobile = useIsMobile();
   
+  // Отслеживание присутствия теперь в GameMain
+  
   const [notifications, setNotifications] = useState<Array<{
     id: string;
     type: 'loot' | 'levelup' | 'achievement';
@@ -98,7 +100,7 @@ const GameInterface = ({ player, onPlayerUpdate, onLogout, onOpenSettings, onOpe
     setShowBattleArena(false);
     setCurrentArenaHall(null); // Сбрасываем выбранный зал при смене локации
     
-    // Если переходим к PvP арене, показываем NewBattleArena
+    // Обновляем статус пользователя в зависимости от локации
     if (location === 'pvp-arena') {
       setShowBattleArena(true);
     }

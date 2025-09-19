@@ -1,6 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import ResizableOnlinePlayersList from './ResizableOnlinePlayersList';
+import TestOnlineList from './TestOnlineList';
+import SimpleTestOnlineList from './SimpleTestOnlineList';
 import EnhancedChat from './EnhancedChat';
 import { PlayerProfile } from '@/types/game';
 import { Button } from '@/components/ui/button';
@@ -124,7 +126,7 @@ const GameFooter = ({ player }: GameFooterProps) => {
           
           {/* Список игроков занимает 10% ширины */}
           <div className="w-[10%] flex-shrink-0">
-            <ResizableOnlinePlayersList />
+            <SimpleTestOnlineList />
           </div>
         </div>
       </div>

@@ -6,6 +6,7 @@ import { PlayerProfile, PlayerEquipmentDb } from '@/types/game';
 import { formatPlayerName } from '@/utils/playerUtils';
 import { useToast } from '@/hooks/use-toast';
 import { useRegeneration } from '@/hooks/useRegeneration';
+import { useUserPresence } from '@/hooks/useUserPresence';
 
 import LevelUpDistributionDialog from './LevelUpDistributionDialog';
 import GameInterface from './GameInterface';
@@ -38,6 +39,9 @@ const GameMain = ({ initialPlayer, initialEquipment, onLogout }: GameMainProps) 
     convertedPlayer,
     convertedEquipment
   } = useGameData(initialPlayer, initialEquipment);
+  
+  // Инициализируем отслеживание присутствия пользователя
+  const { setStatus } = useUserPresence({ autoStart: true });
   
   const [activeTab, setActiveTab] = useState('character');
   const [isInBattle, setInBattle] = useState(false);
@@ -129,6 +133,17 @@ const GameMain = ({ initialPlayer, initialEquipment, onLogout }: GameMainProps) 
       setActiveTab('arena');
     }
   }, [isInBattle, activeTab]);
+
+  // Обновляем статус при изменении активной вкладки
+  useEffect(() => {
+    if (activeTab === 'arena') {
+      setStatus('in_battle');
+    } else if (activeTab === 'dungeon') {
+      setStatus('in_dungeon');
+    } else {
+      setStatus('online');
+    }
+  }, [activeTab, setStatus]);
 
 
   const handleTabClick = (tab: string) => {
