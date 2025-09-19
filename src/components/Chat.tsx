@@ -80,7 +80,7 @@ const Chat = ({ userId, username }: ChatProps) => {
   const loadMessages = async () => {
     try {
       const { data, error } = await supabase
-        .from('chat_messages')
+        .from('all_chat_messages')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(20);
@@ -108,7 +108,27 @@ const Chat = ({ userId, username }: ChatProps) => {
           table: 'chat_messages',
         },
         (payload) => {
-          setMessages(prev => [...prev, payload.new as ChatMessage]);
+          console.log('Получено новое сообщение от пользователя:', payload);
+          setMessages(prev => [payload.new as ChatMessage, ...prev]);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'bot_chat_messages',
+        },
+        (payload) => {
+          console.log('Получено новое сообщение от бота:', payload);
+          // Преобразуем сообщение бота в формат ChatMessage
+          const botMessage: ChatMessage = {
+            id: payload.new.id,
+            player_name: payload.new.player_name,
+            message: payload.new.message,
+            created_at: payload.new.created_at
+          };
+          setMessages(prev => [botMessage, ...prev]);
         }
       )
       .subscribe();
