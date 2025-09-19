@@ -323,13 +323,21 @@ class BotService {
       response_chance: bot.response_chance
     })));
 
-    // Сначала проверим, есть ли прямое обращение к боту
+    // Сначала проверим, есть ли прямое обращение к боту (включая упоминания @)
     let directMentionBot: BotCharacter | null = null;
     if (messageToRespond && messageToRespond.message) {
       const message = messageToRespond.message.toLowerCase();
       directMentionBot = this.botCharacters.find(bot => {
         const botNameLower = bot.name.toLowerCase();
-        return message.includes(botNameLower) || message.includes(bot.username.toLowerCase());
+        const botUsernameLower = bot.username.toLowerCase();
+        
+        // Проверяем различные варианты обращений
+        return message.includes(botNameLower) || 
+               message.includes(botUsernameLower) ||
+               message.includes(`@${botNameLower}`) ||
+               message.includes(`@${botUsernameLower}`) ||
+               message.includes(`@${botNameLower.replace('_bot', '')}`) ||
+               message.includes(`@${botUsernameLower.replace('_bot', '')}`);
       }) || null;
     }
 

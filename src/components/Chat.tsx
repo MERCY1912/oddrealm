@@ -12,6 +12,7 @@ interface ChatMessage {
   player_name: string;
   message: string;
   created_at: string;
+  mentions?: string[]; // Массив упомянутых пользователей
 }
 
 interface ChatProps {
@@ -28,6 +29,7 @@ const Chat = ({ userId, username }: ChatProps) => {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const processedMessageIds = useRef<Set<string>>(new Set());
+  const messageInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadMessages();
@@ -210,11 +212,76 @@ const Chat = ({ userId, username }: ChatProps) => {
     };
   };
 
+  // Функция для обработки клика по нику
+  const handleUsernameClick = (clickedUsername: string) => {
+    if (messageInputRef.current) {
+      // Проверяем, не упомянут ли уже этот пользователь
+      const currentMessage = newMessage;
+      const mentionPattern = new RegExp(`@${clickedUsername}\\b`, 'i');
+      
+      if (!mentionPattern.test(currentMessage)) {
+        // Добавляем упоминание в конец сообщения
+        const mention = `@${clickedUsername} `;
+        const newText = currentMessage + (currentMessage ? ' ' : '') + mention;
+        setNewMessage(newText);
+        
+        // Фокусируемся на поле ввода
+        setTimeout(() => {
+          messageInputRef.current?.focus();
+        }, 100);
+      }
+    }
+  };
+
+  // Функция для подсветки упоминаний в сообщении
+  const renderMessageWithMentions = (message: string) => {
+    const mentionRegex = /@(\w+)/g;
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = mentionRegex.exec(message)) !== null) {
+      // Добавляем текст до упоминания
+      if (match.index > lastIndex) {
+        parts.push(message.slice(lastIndex, match.index));
+      }
+      
+      // Добавляем упоминание с подсветкой
+      parts.push(
+        <span 
+          key={match.index} 
+          className="bg-blue-100 text-blue-800 px-1 rounded font-medium cursor-pointer hover:bg-blue-200 transition-colors"
+          onClick={() => handleUsernameClick(match[1])}
+          title={`Упомянуть ${match[1]}`}
+        >
+          @{match[1]}
+        </span>
+      );
+      
+      lastIndex = match.index + match[0].length;
+    }
+    
+    // Добавляем оставшийся текст
+    if (lastIndex < message.length) {
+      parts.push(message.slice(lastIndex));
+    }
+    
+    return parts.length > 0 ? parts : message;
+  };
+
   const sendMessage = async () => {
     if (!newMessage.trim()) return;
 
     const messageText = newMessage.trim();
     setNewMessage('');
+
+    // Извлекаем упоминания из сообщения
+    const mentionRegex = /@(\w+)/g;
+    const mentions: string[] = [];
+    let match;
+    while ((match = mentionRegex.exec(messageText)) !== null) {
+      mentions.push(match[1]);
+    }
 
     // Сначала добавляем сообщение локально для мгновенного отображения
     const newMsg: ChatMessage = {
@@ -222,6 +289,7 @@ const Chat = ({ userId, username }: ChatProps) => {
       player_name: username,
       message: messageText,
       created_at: new Date().toISOString(),
+      mentions: mentions.length > 0 ? mentions : undefined
     };
     
     setMessages(prev => [...prev, newMsg]);
@@ -277,14 +345,26 @@ const Chat = ({ userId, username }: ChatProps) => {
               <div key={message.id} className={`text-white ${isMobile ? 'py-0.5 text-xs' : 'py-1 text-sm'}`}>
                 {isMobile ? (
                   <div className="flex items-start gap-1">
-                    <span className="text-red-400 font-bold text-xs flex-shrink-0">{message.player_name}:</span>
-                    <span className="break-words">{message.message}</span>
+                    <span 
+                      className="text-red-400 font-bold text-xs flex-shrink-0 cursor-pointer hover:text-red-300 transition-colors"
+                      onClick={() => handleUsernameClick(message.player_name)}
+                      title={`Упомянуть ${message.player_name}`}
+                    >
+                      {message.player_name}:
+                    </span>
+                    <span className="break-words">{renderMessageWithMentions(message.message)}</span>
                   </div>
                 ) : (
                   <>
                     <span className="text-gray-500 text-xs">{formatTime(message.created_at)}</span>
-                    <span className="text-red-400 font-bold text-xs ml-2">{message.player_name}</span>
-                    <span className="ml-2 break-words">{message.message}</span>
+                    <span 
+                      className="text-red-400 font-bold text-xs ml-2 cursor-pointer hover:text-red-300 transition-colors"
+                      onClick={() => handleUsernameClick(message.player_name)}
+                      title={`Упомянуть ${message.player_name}`}
+                    >
+                      {message.player_name}
+                    </span>
+                    <span className="ml-2 break-words">{renderMessageWithMentions(message.message)}</span>
                   </>
                 )}
               </div>
@@ -298,6 +378,7 @@ const Chat = ({ userId, username }: ChatProps) => {
       <div className={`border-t medieval-border flex-shrink-0 ${isMobile ? 'px-1 py-0.5' : 'p-2'}`}>
         <div className={`flex ${isMobile ? 'gap-1' : 'gap-2'}`}>
           <Input
+            ref={messageInputRef}
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyPress={handleKeyPress}
