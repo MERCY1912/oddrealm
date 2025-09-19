@@ -192,7 +192,7 @@ class BotService {
       const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
       
       const { data: recentMessages, error } = await supabase
-        .from('chat_messages')
+        .from('all_chat_messages')
         .select('*')
         .gte('created_at', fiveMinutesAgo)
         .order('created_at', { ascending: false })
@@ -207,18 +207,18 @@ class BotService {
         return;
       }
 
-      // Фильтруем сообщения ботов
+      // Фильтруем сообщения ботов (используем поле is_bot_message если доступно)
       const humanMessages = recentMessages.filter(msg => 
-        !this.botCharacters.some(bot => bot.username === msg.player_name)
+        !msg.is_bot_message && !this.botCharacters.some(bot => bot.username === msg.player_name)
       );
 
       if (humanMessages.length === 0) {
         return;
       }
 
-      // Получаем полную историю чата для контекста
+      // Получаем полную историю чата для контекста (включая сообщения ботов)
       const { data: chatHistory } = await supabase
-        .from('chat_messages')
+        .from('all_chat_messages')
         .select('player_name, message, created_at')
         .order('created_at', { ascending: false })
         .limit(20);
@@ -286,11 +286,11 @@ class BotService {
       );
 
       if (response) {
-        // Отправляем сообщение от имени бота
+        // Отправляем сообщение от имени бота в специальную таблицу
         const { error } = await supabase
-          .from('chat_messages')
+          .from('bot_chat_messages')
           .insert([{
-            player_id: bot.id, // Используем ID бота напрямую
+            bot_id: bot.id,
             player_name: bot.username,
             message: response,
             created_at: new Date().toISOString()
