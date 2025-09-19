@@ -6,7 +6,7 @@ import { PlayerProfile, PlayerEquipmentDb } from '@/types/game';
 import { formatPlayerName } from '@/utils/playerUtils';
 import { useToast } from '@/hooks/use-toast';
 import { useRegeneration } from '@/hooks/useRegeneration';
-import { useUserPresence } from '@/hooks/useUserPresence';
+import { useFastUserPresence } from '@/hooks/useFastUserPresence';
 
 import LevelUpDistributionDialog from './LevelUpDistributionDialog';
 import GameInterface from './GameInterface';
@@ -41,7 +41,7 @@ const GameMain = ({ initialPlayer, initialEquipment, onLogout }: GameMainProps) 
   } = useGameData(initialPlayer, initialEquipment);
   
   // Инициализируем отслеживание присутствия пользователя
-  const { setStatus } = useUserPresence({ autoStart: true });
+  const { setStatus } = useFastUserPresence({ autoStart: true });
   
   const [activeTab, setActiveTab] = useState('character');
   const [isInBattle, setInBattle] = useState(false);

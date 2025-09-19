@@ -3,8 +3,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { formatPlayerName } from '@/utils/playerUtils';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useOnlinePlayers } from '@/hooks/useOnlinePlayers';
-import { OnlinePlayer } from '@/services/simpleOnlineService';
+import { useFastOnlinePlayers } from '@/hooks/useFastOnlinePlayers';
+import { OnlinePlayer } from '@/services/fastOnlineService';
 import { RefreshCw, Users, UserCheck, UserX } from 'lucide-react';
 
 const OnlinePlayersList = () => {
@@ -20,7 +20,7 @@ const OnlinePlayersList = () => {
     inBattleCount,
     inDungeonCount,
     totalCount 
-  } = useOnlinePlayers(true);
+  } = useFastOnlinePlayers(true);
 
   const handleRefresh = async () => {
     await refreshPlayers();
