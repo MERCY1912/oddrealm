@@ -334,14 +334,32 @@ class BotService {
         }
 
         // Обновляем в базе данных
-        const { error } = await supabase
+        const now = new Date().toISOString();
+        
+        // Обновляем основную информацию бота
+        const { error: botError } = await supabase
           .from('bot_characters')
           .update({
             status: newStatus,
             location: newLocation,
-            last_activity: new Date().toISOString()
+            last_activity: now
           })
           .eq('id', bot.id);
+
+        // Обновляем присутствие бота
+        const { error: presenceError } = await supabase
+          .from('bot_presence')
+          .upsert({
+            bot_id: bot.id,
+            last_seen: now,
+            status: newStatus,
+            location: newLocation,
+            last_activity: now
+          }, {
+            onConflict: 'bot_id'
+          });
+
+        const error = botError || presenceError;
 
         if (error) {
           console.error(`Ошибка обновления присутствия бота ${bot.name}:`, error);

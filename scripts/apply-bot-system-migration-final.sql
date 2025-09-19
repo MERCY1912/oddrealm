@@ -1,5 +1,5 @@
 -- =============================================
--- ИСПРАВЛЕННАЯ МИГРАЦИЯ СИСТЕМЫ БОТОВ
+-- ФИНАЛЬНАЯ МИГРАЦИЯ СИСТЕМЫ БОТОВ
 -- =============================================
 -- 
 -- Инструкция:
@@ -11,7 +11,7 @@
 -- =============================================
 
 -- Создание системы ботов для имитации живых игроков
--- Дата: 2025-01-21 (исправленная версия)
+-- Дата: 2025-01-21 (финальная версия с исправлением FK constraint)
 
 -- 1. Таблица персонажей ботов
 CREATE TABLE IF NOT EXISTS public.bot_characters (
@@ -51,7 +51,18 @@ CREATE TABLE IF NOT EXISTS public.bot_activity (
     created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
--- 4. Индексы для производительности
+-- 4. Таблица присутствия ботов (ОТДЕЛЬНО от user_activity)
+CREATE TABLE IF NOT EXISTS public.bot_presence (
+    bot_id uuid REFERENCES public.bot_characters(id) ON DELETE CASCADE PRIMARY KEY,
+    last_seen timestamp with time zone DEFAULT now() NOT NULL,
+    status player_status DEFAULT 'online' NOT NULL,
+    location text DEFAULT 'Таврос' NOT NULL,
+    last_activity timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+-- 5. Индексы для производительности
 CREATE INDEX IF NOT EXISTS idx_bot_characters_active ON public.bot_characters(is_active);
 CREATE INDEX IF NOT EXISTS idx_bot_characters_username ON public.bot_characters(username);
 CREATE INDEX IF NOT EXISTS idx_bot_characters_status ON public.bot_characters(status);
@@ -59,8 +70,10 @@ CREATE INDEX IF NOT EXISTS idx_bot_messages_bot_id ON public.bot_messages(bot_id
 CREATE INDEX IF NOT EXISTS idx_bot_messages_timestamp ON public.bot_messages(timestamp);
 CREATE INDEX IF NOT EXISTS idx_bot_activity_bot_id ON public.bot_activity(bot_id);
 CREATE INDEX IF NOT EXISTS idx_bot_activity_timestamp ON public.bot_activity(timestamp);
+CREATE INDEX IF NOT EXISTS idx_bot_presence_last_seen ON public.bot_presence(last_seen DESC);
+CREATE INDEX IF NOT EXISTS idx_bot_presence_status ON public.bot_presence(status);
 
--- 5. Триггер для обновления updated_at
+-- 6. Триггер для обновления updated_at
 CREATE OR REPLACE FUNCTION public.update_bot_characters_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -74,7 +87,12 @@ CREATE TRIGGER update_bot_characters_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION public.update_bot_characters_updated_at();
 
--- 6. Функция для получения активных ботов
+CREATE TRIGGER update_bot_presence_updated_at
+    BEFORE UPDATE ON public.bot_presence
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_bot_characters_updated_at();
+
+-- 7. Функция для получения активных ботов
 CREATE OR REPLACE FUNCTION public.get_active_bots()
 RETURNS TABLE (
     id uuid,
@@ -110,7 +128,7 @@ AS $$
     ORDER BY bc.last_activity DESC;
 $$;
 
--- 7. Функция для обновления присутствия бота
+-- 8. Функция для обновления присутствия бота
 CREATE OR REPLACE FUNCTION public.update_bot_presence(
     p_bot_id uuid,
     p_status player_status DEFAULT NULL,
@@ -127,13 +145,29 @@ AS $$
         last_activity = now(),
         updated_at = now()
     WHERE id = p_bot_id;
+    
+    -- Также обновляем bot_presence
+    INSERT INTO public.bot_presence (bot_id, last_seen, status, location, last_activity)
+    VALUES (
+        p_bot_id,
+        now(),
+        COALESCE(p_status, (SELECT status FROM public.bot_characters WHERE id = p_bot_id)),
+        COALESCE(p_location, (SELECT location FROM public.bot_characters WHERE id = p_bot_id)),
+        now()
+    )
+    ON CONFLICT (bot_id) DO UPDATE SET
+        last_seen = now(),
+        status = COALESCE(p_status, bot_presence.status),
+        location = COALESCE(p_location, bot_presence.location),
+        last_activity = now(),
+        updated_at = now();
 $$;
 
--- 8. Права на выполнение функций
+-- 9. Права на выполнение функций
 GRANT EXECUTE ON FUNCTION public.get_active_bots() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.update_bot_presence(uuid, player_status, text) TO authenticated;
 
--- 9. Создаем ботов по умолчанию
+-- 10. Создаем ботов по умолчанию
 INSERT INTO public.bot_characters (
     name, username, character_class, level, personality, is_active, response_chance, status, location
 ) VALUES 
@@ -172,28 +206,7 @@ INSERT INTO public.bot_characters (
 )
 ON CONFLICT (username) DO NOTHING;
 
--- 10. Создаем отдельную таблицу для присутствия ботов
-CREATE TABLE IF NOT EXISTS public.bot_presence (
-    bot_id uuid REFERENCES public.bot_characters(id) ON DELETE CASCADE PRIMARY KEY,
-    last_seen timestamp with time zone DEFAULT now() NOT NULL,
-    status player_status DEFAULT 'online' NOT NULL,
-    location text DEFAULT 'Таврос' NOT NULL,
-    last_activity timestamp with time zone DEFAULT now() NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL
-);
-
--- Создаем индекс для производительности
-CREATE INDEX IF NOT EXISTS idx_bot_presence_last_seen ON public.bot_presence(last_seen DESC);
-CREATE INDEX IF NOT EXISTS idx_bot_presence_status ON public.bot_presence(status);
-
--- Триггер для обновления updated_at
-CREATE TRIGGER update_bot_presence_updated_at
-    BEFORE UPDATE ON public.bot_presence
-    FOR EACH ROW
-    EXECUTE FUNCTION public.update_bot_characters_updated_at();
-
--- Добавляем записи присутствия для ботов
+-- 11. Добавляем записи присутствия для ботов
 INSERT INTO public.bot_presence (bot_id, last_seen, status, location, last_activity)
 SELECT 
     bc.id as bot_id,

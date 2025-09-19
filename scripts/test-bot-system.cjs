@@ -67,35 +67,30 @@ async function testBotSystem() {
       });
     }
 
-    // 4. Проверяем ботов в user_activity
-    console.log('\n4️⃣ Checking bots in user_activity...');
+    // 4. Проверяем присутствие ботов
+    console.log('\n4️⃣ Checking bot presence...');
     
-    // Получаем ID ботов из bot_characters
-    const { data: botIds, error: botIdsError } = await supabase
-      .from('bot_characters')
-      .select('id')
-      .eq('is_active', true);
+    const { data: botPresence, error: presenceError } = await supabase
+      .from('bot_presence')
+      .select(`
+        bot_id,
+        last_seen,
+        status,
+        location,
+        bot_characters!inner(
+          name,
+          username,
+          is_active
+        )
+      `);
 
-    let botActivity = [];
-    let activityError = null;
-
-    if (botIds && botIds.length > 0) {
-      const ids = botIds.map(bot => bot.id);
-      const { data, error } = await supabase
-        .from('user_activity')
-        .select('*')
-        .in('user_id', ids);
-      
-      botActivity = data;
-      activityError = error;
-    }
-
-    if (activityError) {
-      console.log(`❌ Error checking bot activity: ${activityError.message}`);
+    if (presenceError) {
+      console.log(`❌ Error checking bot presence: ${presenceError.message}`);
     } else {
-      console.log(`✅ Found ${botActivity?.length || 0} bot entries in user_activity`);
-      botActivity?.forEach(activity => {
-        console.log(`   - ${activity.user_id}: ${activity.status} in ${activity.location}`);
+      console.log(`✅ Found ${botPresence?.length || 0} bot presence entries`);
+      botPresence?.forEach(presence => {
+        const bot = presence.bot_characters;
+        console.log(`   - ${bot.name} (@${bot.username}): ${presence.status} in ${presence.location}`);
       });
     }
 
@@ -146,20 +141,20 @@ async function testBotSystem() {
     console.log('\n🎉 Bot System test completed!');
     
     // Итоговая оценка
-    const hasTables = tables && tables.length >= 3;
+    const hasTables = tables && tables.length >= 4; // Теперь должно быть 4 таблицы
     const hasFunctions = functions && functions.length >= 2;
     const hasBots = bots && bots.length > 0;
-    const hasActivity = botActivity && botActivity.length > 0;
+    const hasPresence = botPresence && botPresence.length > 0;
     const hasMistral = !!mistralKey;
 
     console.log('\n📊 System Status:');
     console.log(`   Tables: ${hasTables ? '✅' : '❌'}`);
     console.log(`   Functions: ${hasFunctions ? '✅' : '❌'}`);
     console.log(`   Bots: ${hasBots ? '✅' : '❌'}`);
-    console.log(`   Activity: ${hasActivity ? '✅' : '❌'}`);
+    console.log(`   Presence: ${hasPresence ? '✅' : '❌'}`);
     console.log(`   Mistral AI: ${hasMistral ? '✅' : '⚠️'}`);
 
-    if (hasTables && hasFunctions && hasBots) {
+    if (hasTables && hasFunctions && hasBots && hasPresence) {
       console.log('\n✅ Bot system is ready to use!');
       console.log('🚀 You can now start the application and see bots in action');
     } else {

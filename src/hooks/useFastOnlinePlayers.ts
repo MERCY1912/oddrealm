@@ -33,18 +33,24 @@ export const useFastOnlinePlayers = (autoRefresh: boolean = true): UseFastOnline
       
       const fastOnlineService = FastOnlineService.getInstance();
       
-      // Загружаем игроков и статистику параллельно
-      const [players, playerStats] = await Promise.all([
+      // Загружаем игроков, ботов и статистику параллельно
+      const [players, bots, playerStats] = await Promise.all([
         fastOnlineService.getOnlinePlayers(),
+        fastOnlineService.getOnlineBots(),
         fastOnlineService.getPlayerStats()
       ]);
       
+      // Объединяем игроков и ботов
+      const allPlayers = [...players, ...bots];
+      
       console.log('useFastOnlinePlayers: Данные загружены:', { 
-        playersCount: players.length, 
+        playersCount: players.length,
+        botsCount: bots.length,
+        totalCount: allPlayers.length,
         stats: playerStats 
       });
       
-      setOnlinePlayers(players);
+      setOnlinePlayers(allPlayers);
       setStats(playerStats);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Ошибка загрузки данных';

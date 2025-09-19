@@ -114,6 +114,66 @@ class FastOnlineService {
   }
 
   /**
+   * Получает список ботов онлайн
+   */
+  async getOnlineBots(): Promise<OnlinePlayer[]> {
+    try {
+      console.log('FastOnlineService: Получаем список ботов...');
+      
+      // Получаем активных ботов
+      const { data: bots, error: botsError } = await supabase
+        .from('bot_characters')
+        .select(`
+          id,
+          name,
+          username,
+          character_class,
+          level,
+          status,
+          location,
+          last_activity
+        `)
+        .eq('is_active', true);
+
+      if (botsError) {
+        console.error('Ошибка получения ботов:', botsError);
+        return [];
+      }
+
+      // Получаем присутствие ботов
+      const { data: presence, error: presenceError } = await supabase
+        .from('bot_presence')
+        .select('bot_id, last_seen, status, location, last_activity');
+
+      if (presenceError) {
+        console.error('Ошибка получения присутствия ботов:', presenceError);
+        return [];
+      }
+
+      // Объединяем данные
+      const botPlayers: OnlinePlayer[] = bots.map(bot => {
+        const botPresence = presence?.find(p => p.bot_id === bot.id);
+        return {
+          id: bot.id,
+          username: bot.username,
+          level: bot.level,
+          character_class: bot.character_class,
+          last_seen: botPresence?.last_seen || bot.last_activity,
+          status: botPresence?.status || bot.status,
+          location: botPresence?.location || bot.location,
+          isBot: true
+        };
+      });
+
+      console.log(`FastOnlineService: Получено ${botPlayers.length} ботов`);
+      return botPlayers;
+    } catch (error) {
+      console.error('Ошибка получения ботов:', error);
+      return [];
+    }
+  }
+
+  /**
    * Получает статистику через RPC
    */
   async getPlayerStats(): Promise<PlayerStats> {
