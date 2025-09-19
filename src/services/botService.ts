@@ -11,6 +11,7 @@ class BotService {
   private presenceUpdateInterval: NodeJS.Timeout | null = null;
   private processedMessages: Set<string> = new Set();
   private isProcessingMessage: Set<string> = new Set();
+  private instanceId: string = Math.random().toString(36).substr(2, 9);
 
   private constructor() {
     this.mistralService = MistralService.getInstance();
@@ -34,7 +35,13 @@ class BotService {
    */
   async initializeBots(): Promise<void> {
     try {
-      console.log('BotService: Инициализируем ботов...');
+      // Проверяем, не инициализированы ли уже боты
+      if (this.isRunning) {
+        console.log('⚠️ BotService уже запущен, пропускаем повторную инициализацию');
+        return;
+      }
+
+      console.log(`BotService [${this.instanceId}]: Инициализируем ботов...`);
       
       // Создаем ботов, если их нет
       await this.createDefaultBots();
@@ -196,7 +203,7 @@ class BotService {
    */
   private async checkForNewMessages(): Promise<void> {
     try {
-      console.log('🔍 BotService: Проверяем новые сообщения...');
+      console.log(`🔍 BotService [${this.instanceId}]: Проверяем новые сообщения...`);
       
       // Очищаем старые обработанные сообщения (старше 10 минут)
       const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
@@ -274,13 +281,13 @@ class BotService {
       this.isProcessingMessage.add(messageToRespond.id);
 
       try {
-        // Генерируем ответ
-        console.log(`🚀 Бот ${respondingBot.name} отвечает на: "${messageToRespond.message}"`);
-        await this.generateBotResponse(respondingBot, messageToRespond, chatHistory || []);
-        
-        // Помечаем сообщение как обработанное
-        this.processedMessages.add(messageToRespond.id);
-        console.log(`✅ Сообщение помечено как обработанное. Всего обработано: ${this.processedMessages.size}`);
+      // Генерируем ответ
+      console.log(`🚀 BotService [${this.instanceId}] - Бот ${respondingBot.name} отвечает на: "${messageToRespond.message}"`);
+      await this.generateBotResponse(respondingBot, messageToRespond, chatHistory || []);
+      
+      // Помечаем сообщение как обработанное
+      this.processedMessages.add(messageToRespond.id);
+      console.log(`✅ BotService [${this.instanceId}] - Сообщение помечено как обработанное. Всего обработано: ${this.processedMessages.size}`);
       } finally {
         // Убираем из обрабатываемых
         this.isProcessingMessage.delete(messageToRespond.id);
@@ -368,7 +375,7 @@ class BotService {
     chatHistory: any[]
   ): Promise<void> {
     try {
-      console.log(`🤖 Бот ${bot.name} отвечает на сообщение: "${messageToRespond.message}"`);
+      console.log(`🤖 BotService [${this.instanceId}] - Бот ${bot.name} отвечает на сообщение: "${messageToRespond.message}"`);
       console.log(`🔑 Mistral API доступен: ${this.mistralService.isAvailable()}`);
       
       const response = await this.mistralService.generateBotResponse(
@@ -394,7 +401,7 @@ class BotService {
         if (error) {
           console.error('Ошибка отправки сообщения бота:', error);
         } else {
-          console.log(`Бот ${bot.name} отправил ответ: "${response}"`);
+          console.log(`✅ BotService [${this.instanceId}] - Бот ${bot.name} отправил ответ: "${response}"`);
           
           // Обновляем активность бота
           await this.updateBotActivity(bot.id, 'chat', `Ответил: "${response.substring(0, 50)}..."`);
