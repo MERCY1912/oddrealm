@@ -32,6 +32,15 @@ const EnhancedChat = ({ userId, username }: EnhancedChatProps) => {
     loadMessages();
     addMockMessages();
     subscribeToMessages();
+    
+    // Fallback: периодическая проверка новых сообщений каждые 3 секунды
+    const interval = setInterval(() => {
+      loadMessages();
+    }, 3000);
+
+    return () => {
+      clearInterval(interval);
+    };
   }, []);
 
   // Автоскролл к последним сообщениям
@@ -96,7 +105,28 @@ const EnhancedChat = ({ userId, username }: EnhancedChatProps) => {
       if (error) throw error;
 
       if (data && data.length > 0) {
-        setMessages(data.reverse());
+        const reversedData = data.reverse();
+        
+        // Проверяем, есть ли новые сообщения
+        setMessages(prevMessages => {
+          // Если это первая загрузка или нет предыдущих сообщений, устанавливаем все
+          if (prevMessages.length === 0 || loading) {
+            return reversedData;
+          }
+          
+          // Проверяем, есть ли новые сообщения
+          const lastMessage = prevMessages[prevMessages.length - 1];
+          const newMessages = reversedData.filter(msg => 
+            new Date(msg.created_at) > new Date(lastMessage.created_at)
+          );
+          
+          if (newMessages.length > 0) {
+            console.log(`🔄 Загружено ${newMessages.length} новых сообщений`);
+            return [...prevMessages, ...newMessages];
+          }
+          
+          return prevMessages;
+        });
       }
     } catch (error: any) {
       console.log('Чат загружается в демо-режиме');
@@ -163,7 +193,18 @@ const EnhancedChat = ({ userId, username }: EnhancedChatProps) => {
     const messageText = newMessage.trim();
     setNewMessage('');
 
-    // Пытаемся отправить в базу данных
+    // Сначала добавляем сообщение локально для мгновенного отображения
+    const newMsg: ChatMessage = {
+      id: `local-${Date.now()}`,
+      player_name: username,
+      message: messageText,
+      created_at: new Date().toISOString(),
+      type: activeTab as 'general' | 'system' | 'trade'
+    };
+    
+    setMessages(prev => [...prev, newMsg]);
+
+    // Затем пытаемся отправить в базу данных
     try {
       const { error } = await supabase
         .from('chat_messages')
@@ -176,20 +217,8 @@ const EnhancedChat = ({ userId, username }: EnhancedChatProps) => {
       if (error) throw error;
       console.log('✅ Сообщение отправлено в базу данных');
     } catch (error: any) {
-      console.log('⚠️ Сообщение отправлено в демо-режиме:', error);
-      
-      // Добавляем сообщение локально для демонстрации
-      const newMsg: ChatMessage = {
-        id: `local-${Date.now()}`,
-        player_name: username,
-        message: messageText,
-        created_at: new Date().toISOString(),
-        type: activeTab as 'general' | 'system' | 'trade'
-      };
-      
-      setMessages(prev => [...prev, newMsg]);
+      console.log('⚠️ Ошибка отправки в базу данных:', error);
     }
-
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
