@@ -79,7 +79,7 @@ class MistralService {
         body: JSON.stringify({
           model: this.model,
           messages,
-          max_tokens: 100,
+          max_tokens: 300,
           temperature: 0.8,
           top_p: 0.9,
         }),
